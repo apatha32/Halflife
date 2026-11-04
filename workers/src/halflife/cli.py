@@ -48,13 +48,37 @@ def clean():
 @app.command()
 def features():
     """Silver -> gold labels and features."""
-    raise NotImplementedError
+    import os
+
+    from halflife import DATA
+    from halflife.features import features
+
+    n = features(DATA / "silver", DATA / "gold", int(os.environ.get("HORIZON_DAYS", "30")))
+    print(f"gold: {n:,} rows")
 
 
 @app.command()
 def train():
     """Train and evaluate models."""
-    raise NotImplementedError
+    import os
+
+    from halflife import DATA, ROOT, evaluate
+    from halflife.train import train
+
+    k = int(os.environ.get("WEEKLY_CAPACITY", "50"))
+    meta = train(
+        DATA / "gold", ROOT / "models", k, float(os.environ.get("NEG_SAMPLE_RATE", "0.05"))
+    )
+    tables = "\n\n".join(
+        f"### {split.title()}\n\n{evaluate.table(r)}" for split, r in meta["results"].items()
+    )
+    doc = (
+        f"# Evaluation — model {meta['version']}\n\nBest (by validation PR-AUC): "
+        f"**{meta['best']}**. K = {k} drives per weekly snapshot. Splits: {meta['splits']}.\n\n"
+        f"{tables}\n\n![Cost curve](../models/{meta['version']}/cost_curve.png)\n"
+    )
+    (ROOT / "docs" / "evaluation.md").write_text(doc)
+    print(doc)
 
 
 @app.command()
