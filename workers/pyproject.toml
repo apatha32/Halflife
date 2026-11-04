@@ -3,7 +3,10 @@ name = "halflife"
 version = "0.1.0"
 description = "Drive-failure prediction on Backblaze Drive Stats."
 requires-python = ">=3.12,<3.13"
-dependencies = ["typer"]
+dependencies = [
+    "duckdb>=2.0.0",
+    "typer",
+]
 
 [project.scripts]
 halflife = "halflife.cli:app"
