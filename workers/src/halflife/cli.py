@@ -1,10 +1,12 @@
 from datetime import datetime
+from pathlib import Path
 
 import typer
 
 app = typer.Typer(no_args_is_help=True)
 Day = typer.Option(formats=["%Y-%m-%d"])
 ScoreDay = typer.Option(..., "--date", formats=["%Y-%m-%d"])
+Required = typer.Option(...)
 
 
 @app.command()
@@ -24,26 +26,13 @@ def ingest(
 @app.command()
 def clean():
     """Bronze -> silver with quarantine and a quality report."""
-    import json
-    import os
-
     from halflife import DATA, report
-    from halflife.clean import clean
+    from halflife.clean import run
 
-    out = DATA / "reports"
-    out.mkdir(parents=True, exist_ok=True)
-    prev = sorted(out.glob("*.json"))
-    r = report.build(
-        clean(DATA / "bronze", DATA / "silver"), json.loads(prev[-1].read_text()) if prev else None
-    )
-    stem = out / r["run_at"].replace(":", "")
-    stem.with_suffix(".json").write_text(json.dumps(r, indent=2))
-    stem.with_suffix(".md").write_text(report.render(r))
+    r, jumps = run(DATA)
     print(report.render(r))
-    limit = float(os.environ.get("NULL_RATE_MAX_JUMP", "0.05"))
-    jumps = {c: d for c, d in r["null_rate_change"].items() if d > limit}
     if jumps:
-        raise typer.Exit(f"Null rate jumped more than {limit:.0%}: {jumps}")
+        raise typer.Exit(f"Null rate jumped past NULL_RATE_MAX_JUMP: {jumps}")
 
 
 @app.command()
@@ -93,6 +82,31 @@ def score(day: datetime = ScoreDay, fleet: str = "Acme Storage"):
 
 
 @app.command()
-def onboard():
-    """Map a customer file to the canonical schema."""
-    raise NotImplementedError
+def onboard(fleet: str = Required, file: Path = Required, apply: bool = False):
+    """Propose a column mapping for a customer file; with --apply, clean, featurize and score it."""
+    import os
+
+    import yaml
+
+    from halflife import DATA, ROOT
+    from halflife import onboard as ob
+
+    slug = fleet.lower().replace(" ", "-")
+    path = ROOT / "mappings" / f"{slug}.yaml"
+    if not apply:
+        path.parent.mkdir(exist_ok=True)
+        path.write_text(yaml.safe_dump(ob.propose(ob.profile(file)), sort_keys=False))
+        print(f"{path.read_text()}\nReview {path}, then re-run with --apply.")
+        return
+    r = ob.apply(
+        file,
+        yaml.safe_load(path.read_text()),
+        fleet,
+        DATA / "fleets" / slug,
+        max((ROOT / "models").iterdir()),
+        int(os.environ.get("HORIZON_DAYS", "30")),
+    )
+    print(
+        f"{r['rows_in']:,} rows in, {sum(r['quarantined'].values()):,} quarantined "
+        f"{r['quarantined']}, {r['scored']:,} drives scored for {fleet} on {r['data_end']}"
+    )

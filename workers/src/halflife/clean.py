@@ -2,6 +2,8 @@ from pathlib import Path
 
 import duckdb
 
+from halflife import report
+
 ATTRS = [5, 9, 12, 187, 188, 194, 197, 198, 199]
 COUNTERS = [5, 9, 12, 187, 188, 198, 199]
 MAKERS = {
@@ -74,3 +76,8 @@ def clean(bronze: Path, silver: Path) -> duckdb.DuckDBPyConnection:
     for name in ["drive_days", "lifecycle", "quarantine"]:
         con.execute(f"COPY {name} TO '{silver / name}.parquet'")
     return con
+
+
+def run(data: Path) -> tuple[dict, dict]:
+    """Clean data/bronze into data/silver and save the quality report to data/reports."""
+    return report.save(clean(data / "bronze", data / "silver"), data / "reports")

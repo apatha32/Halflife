@@ -1,0 +1,42 @@
+date_format: '%m/%d/%Y'
+columns:
+  smart_9:
+    source: Power On Hrs
+    confidence: 1.0
+  smart_5:
+    source: Realloc Sector Ct
+    confidence: 1.0
+  smart_199:
+    source: CRC Error Count
+    confidence: 1.0
+  smart_198:
+    source: Offline Uncorrectable
+    confidence: 1.0
+  smart_197:
+    source: Pending Sectors
+    confidence: 1.0
+  smart_194:
+    source: Temp
+    confidence: 1.0
+    transform: fahrenheit_to_celsius
+  smart_12:
+    source: Power Cycle Count
+    confidence: 1.0
+  model:
+    source: Drive Model
+    confidence: 1.0
+  failure:
+    source: Failed?
+    confidence: 1.0
+  drive_id:
+    source: Serial No
+    confidence: 1.0
+  date:
+    source: Reading Date
+    confidence: 1.0
+  capacity_tb:
+    source: Size (TB)
+    confidence: 1.0
+missing:
+- smart_187
+- smart_188

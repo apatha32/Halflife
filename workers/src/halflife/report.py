@@ -1,4 +1,7 @@
+import json
+import os
 from datetime import UTC, datetime
+from pathlib import Path
 
 
 def build(con, prev: dict | None) -> dict:
@@ -65,3 +68,15 @@ Counter resets fixed: {r["resets_fixed"]:,} ({r["rows_rebased"]:,} rows rebased)
 |---|---|---|
 {nulls}
 """
+
+
+def save(con, out: Path) -> tuple[dict, dict]:
+    """Build, write (JSON + Markdown) and gate a report; returns (report, null-rate jumps)."""
+    out.mkdir(parents=True, exist_ok=True)
+    prev = sorted(out.glob("*.json"))
+    r = build(con, json.loads(prev[-1].read_text()) if prev else None)
+    stem = out / r["run_at"].replace(":", "")
+    stem.with_suffix(".json").write_text(json.dumps(r, indent=2))
+    stem.with_suffix(".md").write_text(render(r))
+    limit = float(os.environ.get("NULL_RATE_MAX_JUMP", "0.05"))
+    return r, {c: d for c, d in r["null_rate_change"].items() if d > limit}

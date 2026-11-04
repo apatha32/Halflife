@@ -9,7 +9,7 @@
 - [x] 6. Supabase — local stack via CLI; RLS pgTAP test passes (4 assertions); demo password login works
 - [x] 7. Scoring — 2025-12-31: 34,147 Acme drives scored; re-run leaves 34,187 scores (incl. 40 seed), 179,244 history rows, 1 report
 - [x] 8. Web app — verified in headless Chrome at 375px: login, demo login, pull list (25/page, CSV 500 rows), drive detail, data quality, RLS (Acme cannot open Northwind drives), no horizontal overflow
-- [ ] 9. Onboarding
+- [x] 9. Onboarding — Northwind CSV (36,204 rows) -> 712 duplicates quarantined -> 300 drives scored using only mappings/northwind.yaml; coverage 0.77 vs Acme 0.85
 - [ ] 10. Deploy prep and README
 - [ ] Finish: full tests, lint, staff-engineer review
 
@@ -52,3 +52,7 @@
 - Demo login = password sign-in for the seeded demo users; buttons only show when DEMO_PASSWORD is set (server-only env). Magic link uses `shouldCreateUser: false`, so only invited users can sign in.
 - Chart: Recharts. Sensor counters and temperature are two stacked panels sharing the x axis (no dual axis); risk is overlaid as a dashed marker at the score date because risk exists only on scoring dates. Validated default palette (slots 1-4); its low-contrast WARN is relieved by legend, tooltips and a "history as a table" view.
 - Mobile: Model and Age columns hide below 640px so Risk and Top driver fit at 375px.
+- Onboarding confidence = 0.6 x best difflib ratio vs target aliases + 0.4 x a value-range check (temps with median 80-130 => Fahrenheit transform; failure must be 0/1; dates pick the format with the best parse rate). Greedy one-to-one assignment, threshold 0.5. Text columns profile with NaN ranges so numeric checks are simply false.
+- `--apply` reads only the saved YAML; data goes to data/fleets/<slug>/{bronze,silver,gold,reports} and reuses clean.run -> features -> score. Required columns (drive_id, date, model) are checked at this boundary.
+- Clean + report gating moved into clean.run()/report.save() so the CLI and onboarding share them.
+- Alias lists include the names used by make_northwind.py, so Northwind scores 1.0 on every column; real customer files would rely more on the value checks. Logged as a limitation.
