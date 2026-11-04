@@ -8,7 +8,7 @@
 - [x] 5. Features and model — full run: test PR-AUC LightGBM 0.078 / logistic 0.061 / naive 0.021; P@50 11.7% vs 3.8%; R@50 18.1% vs 5.9%. Model 20261104-1138.
 - [x] 6. Supabase — local stack via CLI; RLS pgTAP test passes (4 assertions); demo password login works
 - [x] 7. Scoring — 2025-12-31: 34,147 Acme drives scored; re-run leaves 34,187 scores (incl. 40 seed), 179,244 history rows, 1 report
-- [ ] 8. Web app
+- [x] 8. Web app — verified in headless Chrome at 375px: login, demo login, pull list (25/page, CSV 500 rows), drive detail, data quality, RLS (Acme cannot open Northwind drives), no horizontal overflow
 - [ ] 9. Onboarding
 - [ ] 10. Deploy prep and README
 - [ ] Finish: full tests, lint, staff-engineer review
@@ -48,3 +48,7 @@
 - Rebased counters are cast back to BIGINT in clean (sum() widened them to HUGEINT -> floats).
 - Risk is a ranking score, not a calibrated probability (negatives downsampled + class weights push top risks to ~1.0). The UI shows rank and relative risk.
 - coverage = share of the 9 SMART attributes the drive reports that day (Toshiba/HGST lack 187/188 -> 0.78).
+- Web: Next 16 `proxy.ts` (renamed middleware) refreshes the Supabase session; every page uses the anon key + user cookies so RLS applies. No service-role key in web/.
+- Demo login = password sign-in for the seeded demo users; buttons only show when DEMO_PASSWORD is set (server-only env). Magic link uses `shouldCreateUser: false`, so only invited users can sign in.
+- Chart: Recharts. Sensor counters and temperature are two stacked panels sharing the x axis (no dual axis); risk is overlaid as a dashed marker at the score date because risk exists only on scoring dates. Validated default palette (slots 1-4); its low-contrast WARN is relieved by legend, tooltips and a "history as a table" view.
+- Mobile: Model and Age columns hide below 640px so Risk and Top driver fit at 375px.

@@ -9,3 +9,4 @@ node_modules/
 *.tsbuildinfo
 .DS_Store
 workers/tests/fixtures/onepct/
+.env.local
