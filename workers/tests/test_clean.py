@@ -44,3 +44,14 @@ def test_clean_rebases_quarantines_and_builds_lifecycle(tmp_path):
     life = con.sql("SELECT drive_id, end_reason FROM lifecycle ORDER BY 1").fetchall()
     assert life == [("A", "failed"), ("B", "still_active"), ("C", "retired_or_missing")]
     assert con.execute("SELECT manufacturer FROM drive_days LIMIT 1").fetchall()[0][0] == "Seagate"
+
+
+def test_report_rows_add_up_and_null_jump_is_measured(tmp_path):
+    from halflife import report
+
+    make_bronze(tmp_path / "bronze")
+    con = clean(tmp_path / "bronze", tmp_path / "silver")
+    r = report.build(con, {"null_rates": {"smart_5": 0.0, "smart_9": 0.5}})
+    assert r["rows_in"] == r["rows_out"] + sum(r["quarantined"].values()) == 12
+    assert r["resets_fixed"] == 1 and r["null_rate_change"] == {"smart_5": 0.0, "smart_9": 0.5}
+    assert "| duplicate | 1 |" in report.render(r)

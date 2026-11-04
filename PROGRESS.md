@@ -4,7 +4,7 @@
 - [x] 1. Probe
 - [x] 2. Ingest (bronze) — full run: 24 months, 22,490,291 rows, 862 failures, ~10 min, 882 MB
 - [x] 3. Clean (silver) — fixture: 2,337,844 in, 350 quarantined, 241 counter resets on 137 drives
-- [ ] 4. Quality report
+- [x] 4. Quality report — data/reports/<run_at>.json + .md; fixture: 2,337,844 in = 2,337,494 out + 350 quarantined
 - [ ] 5. Features and model
 - [ ] 6. Supabase
 - [ ] 7. Scoring
@@ -27,3 +27,4 @@
 - Quarantine reasons, first match wins: missing_key, duplicate (keep failure row / larger capacity), after_failure (rows after a drive's first failure — one fixture drive "failed" twice), bad_capacity (<=0; 346 fixture rows, none failures), bad_temperature (not 1-100 C), bad_power_on_hours (>20 years), negative_smart.
 - Manufacturer from a model-prefix dict; unknown prefixes -> 'Other'.
 - DuckDB 2.0: relations have no fetchone() and an unfinished execute() result blocks the connection, so code uses fetchall().
+- Quality report compares to the newest previous JSON in reports/; the run writes the report first, then exits 1 if any null rate rose by more than NULL_RATE_MAX_JUMP (default 0.05 = 5 points), so the failing report is kept for inspection.
