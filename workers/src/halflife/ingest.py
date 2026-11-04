@@ -36,7 +36,7 @@ def ingest_month(con, src: str, lo: date, hi: date, pct: float, run_id: str) -> 
         f"CREATE OR REPLACE TEMP TABLE m AS SELECT * FROM {src} "
         f"WHERE date BETWEEN DATE '{lo}' AND DATE '{hi}' AND {sampled(pct)}"
     )
-    counts = con.execute("SELECT count(COLUMNS(*)) FROM m").fetchone()
+    counts = con.execute("SELECT count(COLUMNS(*)) FROM m").fetchall()[0]
     present = [c for c, n in zip(con.table("m").columns, counts) if n]
     schema_hash = hashlib.md5(",".join(sorted(present)).encode()).hexdigest()[:12]
     part = f"year={lo.year}/month={lo.month:02d}"
@@ -46,7 +46,7 @@ def ingest_month(con, src: str, lo: date, hi: date, pct: float, run_id: str) -> 
             f"COPY (SELECT *, '{run_id}' AS _run_id, '{schema_hash}' AS _schema_hash "
             f"FROM m WHERE {where}) TO '{root / part / 'data.parquet'}'"
         )
-    return con.execute("SELECT count(*) FROM m").fetchone()[0]
+    return con.execute("SELECT count(*) FROM m").fetchall()[0][0]
 
 
 def ingest(start: date, end: date, pct: float) -> None:

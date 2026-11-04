@@ -3,7 +3,7 @@
 ## Steps
 - [x] 1. Probe
 - [x] 2. Ingest (bronze) — full run: 24 months, 22,490,291 rows, 862 failures, ~10 min, 882 MB
-- [ ] 3. Clean (silver)
+- [x] 3. Clean (silver) — fixture: 2,337,844 in, 350 quarantined, 241 counter resets on 137 drives
 - [ ] 4. Quality report
 - [ ] 5. Features and model
 - [ ] 6. Supabase
@@ -22,3 +22,8 @@
 - Partition = month file `data/bronze/year=Y/month=MM/data.parquet`; re-ingest overwrites the file (verified: 2024-06 re-run gave the same 870,357 rows).
 - 1% fixture (`workers/tests/fixtures/onepct/`, 2.34M rows, 3,882 drives, 82 failures, 86 MB) is git-ignored: it is data. Unit tests use tiny inline fixtures instead.
 - `DATA_DIR` env (default `<repo>/data`) lets every step run against the fixture: `DATA_DIR=workers/tests/fixtures/onepct`.
+- SMART picks: 5, 9, 12, 187, 188, 194, 197, 198, 199 (see docs/decisions/0001). Counters rebased: 5, 9, 12, 187, 188, 198, 199; 194/197 are gauges.
+- Silver is a full recompute (counter rebasing needs whole-drive history), written as three files that are overwritten each run: drive_days, lifecycle, quarantine.
+- Quarantine reasons, first match wins: missing_key, duplicate (keep failure row / larger capacity), after_failure (rows after a drive's first failure — one fixture drive "failed" twice), bad_capacity (<=0; 346 fixture rows, none failures), bad_temperature (not 1-100 C), bad_power_on_hours (>20 years), negative_smart.
+- Manufacturer from a model-prefix dict; unknown prefixes -> 'Other'.
+- DuckDB 2.0: relations have no fetchone() and an unfinished execute() result blocks the connection, so code uses fetchall().

@@ -23,7 +23,11 @@ def ingest(
 @app.command()
 def clean():
     """Bronze -> silver with quarantine and a quality report."""
-    raise NotImplementedError
+    from halflife import DATA
+    from halflife.clean import clean
+
+    con = clean(DATA / "bronze", DATA / "silver")
+    print(con.sql("SELECT reason, count(*) FROM quarantine GROUP BY 1"))
 
 
 @app.command()
