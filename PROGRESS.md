@@ -82,5 +82,8 @@ Known limitations (not fixed):
 - [x] Smooth transitions: React `<ViewTransition>` crossfades the page area on every route change (blur + slide, 0.25s out / 0.5s in); the drive ID morphs from its pull-list row into the drive page heading; one shared ease-out curve for hovers, reveals and chart line draws. Reduced motion disables all of it.
 - [x] Fonts: SF Pro (text) and SF Mono (labels, numbers, IDs) via system font stacks; no web font download. Non-Apple systems fall back to system-ui / Menlo / Consolas.
 - [x] Shades: green scale neon-50..900 and grey scale; gradients on panels, buttons, table heads, bars and the hero; pull-list rank/risk shaded by tier (top 3 glow, 4-10, 11-50, rest). Site diagram uses pink shades (group lines, labels, edges).
-- Not verified in a browser: route transitions and the ID morph, because Docker Desktop would not start (local Supabase needs it). Build, types and the login page were verified.
+- Verified in Chrome: route crossfade on every navigation, drive ID morph pull list -> drive page, no animations under reduced motion, no errors.
 - [x] Background: pure black with a fixed layer from the left edge: green radial + linear shade (breathes over 9s) and a 135-degree line pattern masked to fade out by ~60% width (drifts over 40s). Same in app and site; static under reduced motion. Fixed position, so it holds still across scroll and route transitions.
+
+## Next session
+- Phase 2 deploy, decisions pending: install Railway + Vercel CLIs (`npm i -g @railway/cli vercel`); user runs `supabase login`, `railway login`, `vercel login`; choose paid Railway plan (~8 GB RAM for the 10% run) or a smaller sample on a free plan.
