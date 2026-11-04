@@ -1,4 +1,4 @@
-.PHONY: setup lint test
+.PHONY: setup lint test test-db
 
 setup:
 	cd workers && uv sync
@@ -10,3 +10,6 @@ lint:
 
 test:
 	cd workers && uv run pytest -q
+
+test-db:
+	supabase test db

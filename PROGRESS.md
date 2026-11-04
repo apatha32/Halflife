@@ -6,7 +6,7 @@
 - [x] 3. Clean (silver) — fixture: 2,337,844 in, 350 quarantined, 241 counter resets on 137 drives
 - [x] 4. Quality report — data/reports/<run_at>.json + .md; fixture: 2,337,844 in = 2,337,494 out + 350 quarantined
 - [x] 5. Features and model — full run: test PR-AUC LightGBM 0.078 / logistic 0.061 / naive 0.021; P@50 11.7% vs 3.8%; R@50 18.1% vs 5.9%. Model 20261104-1138.
-- [ ] 6. Supabase
+- [x] 6. Supabase — local stack via CLI; RLS pgTAP test passes (4 assertions); demo password login works
 - [ ] 7. Scoring
 - [ ] 8. Web app
 - [ ] 9. Onboarding
@@ -37,3 +37,8 @@
 - K = WEEKLY_CAPACITY (default 50 drives/week ~= 0.14% of the ~35k-drive 10% fleet). Precision@K = mean over weekly snapshots; recall@K = caught / all positives across snapshots.
 - Best model picked on validation PR-AUC (not test). models/<version>/ is committed (1 MB) so scoring and deploy work without retraining.
 - Full clean: 22,490,291 in = 22,485,165 out + 5,126 quarantined (3,312 bad_capacity, 1,814 after_failure); 2,458 counter resets fixed; 860 failed drives.
+- RLS: one `is_member(fleet_id)` security-definer helper used by every select policy; no insert/update policies, so only the service-role key writes. `pull_list` is security invoker so RLS applies to it.
+- quality_reports carries fleet_id (Acme gets pipeline reports, Northwind its onboarding reports) so it is a fleet table under RLS too.
+- drive_scores also has age_days (pull list column) and coverage (step 9) so the schema stays one migration.
+- Seed: fleets Acme Storage / Northwind, demo@acme.test and demo@northwind.test (password halflife-demo), 20 placeholder SEED- drives per fleet scored 2025-01-01; real scores have later dates, and pull_list shows the latest date.
+- RLS test runs with `supabase test db` (make test-db) and as a separate CI job that starts the Supabase DB.
