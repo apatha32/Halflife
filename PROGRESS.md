@@ -83,3 +83,4 @@ Known limitations (not fixed):
 - [x] Fonts: SF Pro (text) and SF Mono (labels, numbers, IDs) via system font stacks; no web font download. Non-Apple systems fall back to system-ui / Menlo / Consolas.
 - [x] Shades: green scale neon-50..900 and grey scale; gradients on panels, buttons, table heads, bars and the hero; pull-list rank/risk shaded by tier (top 3 glow, 4-10, 11-50, rest). Site diagram uses pink shades (group lines, labels, edges).
 - Not verified in a browser: route transitions and the ID morph, because Docker Desktop would not start (local Supabase needs it). Build, types and the login page were verified.
+- [x] Background: pure black with a fixed layer from the left edge: green radial + linear shade (breathes over 9s) and a 135-degree line pattern masked to fade out by ~60% width (drifts over 40s). Same in app and site; static under reduced motion. Fixed position, so it holds still across scroll and route transitions.
