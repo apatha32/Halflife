@@ -2,56 +2,89 @@
 
 @theme {
   --color-ink: #000000;
-  --color-panel: #0a0a0a;
+  --color-panel: #0b0b0b;
+  --color-raised: #141414;
   --color-line: #262626;
+  --color-line-strong: #3a3a3a;
   --color-dim: #8f8f8f;
+  --color-soft: #c4c4c4;
   --color-paper: #ffffff;
+  --color-neon-50: #effff0;
+  --color-neon-100: #d2ffc7;
+  --color-neon-200: #a8ff8f;
+  --color-neon-300: #6dff4a;
   --color-neon: #39ff14;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --color-neon-600: #26c80c;
+  --color-neon-700: #1b9108;
+  --color-neon-800: #125f06;
+  --color-neon-900: #0a3304;
+  --font-sans: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Consolas, monospace;
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 :root {
-  --surface: #0a0a0a;
-  --grid: #262626;
+  --surface: #0b0b0b;
+  --grid: #1f1f1f;
   --muted: #8f8f8f;
   --series-1: #39ff14;
-  --series-2: #ffffff;
-  --series-3: #8f8f8f;
-  --series-4: #5c5c5c;
+  --series-2: #d2ffc7;
+  --series-3: #26c80c;
+  --series-4: #8f8f8f;
   color-scheme: dark;
+  scroll-behavior: smooth;
 }
 
 body {
   background:
-    linear-gradient(rgba(57, 255, 20, 0.035) 1px, transparent 1px) 0 0 / 100% 32px,
+    radial-gradient(1200px 500px at 50% -200px, rgba(57, 255, 20, 0.09), transparent 70%),
+    linear-gradient(rgba(57, 255, 20, 0.03) 1px, transparent 1px) 0 0 / 100% 32px,
     #000;
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection { background: #39ff14; color: #000; }
 
+a, button, input, summary, tr { transition: color 0.35s var(--ease-smooth), background-color 0.35s var(--ease-smooth), border-color 0.35s var(--ease-smooth), box-shadow 0.35s var(--ease-smooth), opacity 0.35s var(--ease-smooth); }
+
+.shade { background: linear-gradient(180deg, #141414 0%, #0b0b0b 55%, #070707 100%); }
+.shade-head { background: linear-gradient(180deg, #161616, #0d0d0d); }
+
 @keyframes rise {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translateY(10px); filter: blur(2px); }
+  to { opacity: 1; transform: none; filter: none; }
 }
 @keyframes glow {
-  0%, 100% { text-shadow: 0 0 4px rgba(57, 255, 20, 0.5); }
-  50% { text-shadow: 0 0 14px rgba(57, 255, 20, 0.95); }
+  0%, 100% { text-shadow: 0 0 4px rgba(57, 255, 20, 0.35), 0 0 0 rgba(57, 255, 20, 0); }
+  50% { text-shadow: 0 0 10px rgba(57, 255, 20, 0.8), 0 0 22px rgba(38, 200, 12, 0.45); }
 }
 @keyframes blink { 50% { opacity: 0; } }
 @keyframes scan { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
 
-.rise { animation: rise 0.5s ease-out both; }
-.glow { animation: glow 2.4s ease-in-out infinite; }
-.cursor::after { content: "_"; color: #39ff14; animation: blink 1s steps(1) infinite; }
+.rise { animation: rise 0.7s var(--ease-smooth) both; }
+.glow { animation: glow 3s ease-in-out infinite; }
+.cursor::after { content: "_"; color: #39ff14; animation: blink 1.1s steps(1) infinite; }
 .scanbar { position: relative; overflow: hidden; }
 .scanbar::after {
   content: ""; position: absolute; inset: auto 0 0 0; height: 1px;
-  background: linear-gradient(90deg, transparent, #39ff14, transparent);
-  animation: scan 3s linear infinite;
+  background: linear-gradient(90deg, transparent, #125f06, #39ff14, #125f06, transparent);
+  animation: scan 4s linear infinite;
 }
-.neon-btn { transition: box-shadow 0.2s, background-color 0.2s, color 0.2s; }
-.neon-btn:hover, .neon-btn:focus-visible { box-shadow: 0 0 12px rgba(57, 255, 20, 0.6); background: #39ff14; color: #000; }
+.neon-btn { background: linear-gradient(180deg, rgba(57, 255, 20, 0.08), rgba(57, 255, 20, 0)); }
+.neon-btn:hover, .neon-btn:focus-visible {
+  background: linear-gradient(180deg, #6dff4a, #39ff14 45%, #26c80c);
+  color: #000;
+  box-shadow: 0 0 0 1px #39ff14, 0 0 18px rgba(57, 255, 20, 0.45), 0 0 40px rgba(38, 200, 12, 0.2);
+}
+
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.45s; animation-timing-function: var(--ease-smooth); }
+::view-transition-old(page) { animation: page-out 0.25s var(--ease-smooth) both; }
+::view-transition-new(page) { animation: page-in 0.5s var(--ease-smooth) both; }
+::view-transition-group(.morph) { animation-duration: 0.5s; animation-timing-function: var(--ease-smooth); }
+@keyframes page-out { to { opacity: 0; transform: translateY(-6px); filter: blur(3px); } }
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); filter: blur(3px); } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }

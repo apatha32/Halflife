@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ViewTransition } from "react";
 import Table from "@/components/Table";
 import { session } from "@/lib/supabase";
 import Chart, { type Point } from "./Chart";
@@ -26,17 +27,19 @@ export default async function Drive({ params }: { params: Promise<{ id: string }
   return (
     <div className="space-y-8">
       <div>
-        <Link href="/pull-list" className="text-xs tracking-wider text-dim uppercase hover:text-neon">&lt; pull list</Link>
-        <h1 className="mt-2 text-3xl font-bold break-all">{id}</h1>
+        <Link href="/pull-list" className="font-mono text-xs tracking-wider text-dim uppercase hover:text-neon">&lt; pull list</Link>
+        <ViewTransition name={`drive-${id}`} share="morph" default="none">
+          <h1 className="mt-2 font-mono text-3xl font-bold break-all">{id}</h1>
+        </ViewTransition>
         <p className="mt-1 text-sm text-dim">
           {drive.manufacturer} {drive.model} / {Number(drive.capacity_tb).toFixed(0)} TB
         </p>
         {latest && (
           <div className="mt-4 flex flex-wrap gap-3">
             {[["rank", `#${latest.rank}`], ["risk", latest.risk.toFixed(3)], ["scored", latest.score_date]].map(([k, v]) => (
-              <div key={k} className="border border-line bg-panel px-4 py-2">
-                <div className="text-xs tracking-wider text-dim uppercase">{k}</div>
-                <div className={`text-xl font-bold ${k === "scored" ? "" : "glow text-neon"}`}>{v}</div>
+              <div key={k} className="border border-line shade px-4 py-2">
+                <div className="font-mono text-xs tracking-wider text-dim uppercase">{k}</div>
+                <div className={`font-mono text-xl font-bold ${k === "scored" ? "text-soft" : "glow text-neon"}`}>{v}</div>
               </div>
             ))}
           </div>
@@ -44,11 +47,11 @@ export default async function Drive({ params }: { params: Promise<{ id: string }
       </div>
       {drivers.length > 0 && (
         <section>
-          <h2 className="mb-3 text-xs tracking-wider text-dim uppercase">Why this drive is flagged</h2>
+          <h2 className="mb-3 font-mono text-xs tracking-wider text-dim uppercase">Why this drive is flagged</h2>
           <ol className="space-y-2 text-sm">
             {drivers.map((d, i) => (
-              <li key={d} className="rise flex gap-3 border-l-2 border-neon bg-panel px-3 py-2" style={{ animationDelay: `${i * 120}ms` }}>
-                <span className="text-neon">0{i + 1}</span>
+              <li key={d} className="rise flex gap-3 border-l-2 border-neon bg-gradient-to-r from-neon-900/50 via-panel to-panel px-3 py-2" style={{ animationDelay: `${i * 120}ms` }}>
+                <span className="font-mono text-neon-300">0{i + 1}</span>
                 <span>{d}. This pushes its failure risk up.</span>
               </li>
             ))}

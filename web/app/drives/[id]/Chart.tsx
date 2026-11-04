@@ -22,14 +22,14 @@ function Panel({ data, series, scoreDate, risk, height }: {
         <XAxis dataKey="date" tick={{ fontSize: 11, fill: "var(--muted)" }} stroke="var(--grid)" minTickGap={40} />
         <YAxis tick={{ fontSize: 11, fill: "var(--muted)" }} stroke="var(--grid)" width={48} />
         <Tooltip
-          contentStyle={{ background: "#000", border: "1px solid #39ff14", fontSize: 12 }}
+          contentStyle={{ background: "linear-gradient(180deg,#141414,#070707)", border: "1px solid #1b9108", borderRadius: 6, fontSize: 12, fontFamily: "var(--font-mono)" }}
           labelStyle={{ color: "#fff" }}
           cursor={{ stroke: "#39ff14", strokeOpacity: 0.4 }}
         />
         {series.length > 1 && <Legend wrapperStyle={{ fontSize: 12, color: "var(--muted)" }} />}
         {series.map(([key, name, color, dash]) => (
           <Line key={key} dataKey={key} name={name} stroke={color} strokeDasharray={dash} strokeWidth={2}
-            dot={false} activeDot={{ r: 4, stroke: "#000", strokeWidth: 2 }} connectNulls animationDuration={1200} />
+            dot={false} activeDot={{ r: 4, stroke: "#000", strokeWidth: 2 }} connectNulls animationDuration={1400} animationEasing="ease-out" />
         ))}
         {scoreDate && (
           <ReferenceLine x={scoreDate} stroke="#39ff14" strokeDasharray="4 3"
@@ -42,13 +42,13 @@ function Panel({ data, series, scoreDate, risk, height }: {
 
 export default function Chart({ data, scoreDate, risk }: { data: Point[]; scoreDate?: string; risk: string }) {
   return (
-    <div className="space-y-6 border border-line bg-panel p-3">
+    <div className="space-y-6 border border-line shade p-3">
       <section aria-label="Error counters">
-        <h2 className="px-1 text-xs tracking-wider text-dim uppercase">Error counters, last 180 days</h2>
+        <h2 className="px-1 font-mono text-xs tracking-wider text-dim uppercase">Error counters, last 180 days</h2>
         <Panel data={data} series={COUNTERS} scoreDate={scoreDate} risk={risk} height={260} />
       </section>
       <section aria-label="Temperature">
-        <h2 className="px-1 text-xs tracking-wider text-dim uppercase">Temperature (C)</h2>
+        <h2 className="px-1 font-mono text-xs tracking-wider text-dim uppercase">Temperature (C)</h2>
         <Panel data={data} series={[["smart_194", "Temperature", "var(--series-2)"]]} scoreDate={scoreDate} height={140} />
       </section>
     </div>

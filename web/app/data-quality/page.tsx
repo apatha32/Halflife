@@ -17,23 +17,23 @@ export default async function DataQuality() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs tracking-widest text-neon uppercase">{fleet?.name}</p>
-        <h1 className="mt-1 text-3xl font-bold">Data quality</h1>
+        <p className="font-mono text-xs tracking-widest text-neon uppercase">{fleet?.name}</p>
+        <h1 className="mt-1 text-4xl font-semibold tracking-tight">Data quality</h1>
       </div>
       {reports.length === 0 && <p className="text-dim">No quality reports yet.</p>}
       {reports.map((r) => {
         const quarantined = Object.values(r.quarantined).reduce((a, b) => a + b, 0);
         const change = Object.entries(r.null_rate_change).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
         return (
-          <article key={r.run_at} className="space-y-4 border border-line bg-panel p-4">
-            <h2 className="text-xs tracking-wider text-dim uppercase">
+          <article key={r.run_at} className="space-y-4 border border-line shade p-4">
+            <h2 className="font-mono text-xs tracking-wider text-dim uppercase">
               Run {r.run_at.replace("T", " ").slice(0, 16)} UTC / data {r.data_start} to {r.data_end}
             </h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[["rows in", r.rows_in], ["clean", r.rows_out], ["quarantined", quarantined], ["resets fixed", r.resets_fixed]].map(([k, v]) => (
                 <div key={k} className="border border-line px-3 py-2">
-                  <div className="text-xs tracking-wider text-dim uppercase">{k}</div>
-                  <div className={`text-lg font-bold tabular-nums ${k === "clean" ? "text-neon" : ""}`}>{n(Number(v))}</div>
+                  <div className="font-mono text-xs tracking-wider text-dim uppercase">{k}</div>
+                  <div className={`font-mono text-lg font-bold tabular-nums ${k === "clean" ? "text-neon" : k === "quarantined" ? "text-neon-600" : "text-soft"}`}>{n(Number(v))}</div>
                 </div>
               ))}
             </div>

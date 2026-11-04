@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { ViewTransition } from "react";
 import Table from "@/components/Table";
 import { session } from "@/lib/supabase";
 
 const PAGE = 25;
+const tier = (rank: number) =>
+  rank <= 3 ? "glow font-bold text-neon" : rank <= 10 ? "text-neon-300" : rank <= 50 ? "text-neon-600" : "text-soft";
 export const COLUMNS = [
   { key: "rank", label: "#", numeric: true },
   { key: "drive_id", label: "Drive" },
@@ -30,8 +33,8 @@ export default async function PullList({ searchParams }: { searchParams: Promise
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs tracking-widest text-neon uppercase">{fleet.name}</p>
-          <h1 className="mt-1 text-3xl font-bold">Pull list</h1>
+          <p className="font-mono text-xs tracking-widest text-neon uppercase">{fleet.name}</p>
+          <h1 className="mt-1 text-4xl font-semibold tracking-tight">Pull list</h1>
           <p className="mt-1 text-sm text-dim">
             Riskiest drives {rows[0] ? `scored ${rows[0].score_date}` : ""}. Risk ranks drives; it is not a calibrated probability.
           </p>
@@ -42,17 +45,19 @@ export default async function PullList({ searchParams }: { searchParams: Promise
         columns={COLUMNS}
         rows={rows.map((r) => ({
           ...r,
-          rank: <span className={r.rank <= 3 ? "glow font-bold text-neon" : ""}>{r.rank}</span>,
-          drive_id: <Link className="underline decoration-line underline-offset-4 transition-colors hover:text-neon hover:decoration-neon" href={`/drives/${encodeURIComponent(r.drive_id)}`}>{r.drive_id}</Link>,
+          rank: <span className={tier(r.rank)}>{r.rank}</span>,
+          drive_id: <Link className="underline decoration-line underline-offset-4 transition-colors hover:text-neon hover:decoration-neon" href={`/drives/${encodeURIComponent(r.drive_id)}`}>
+            <ViewTransition name={`drive-${r.drive_id}`} share="morph" default="none"><span className="font-mono">{r.drive_id}</span></ViewTransition>
+          </Link>,
           age: r.age_days == null ? "n/a" : (r.age_days / 365).toFixed(1),
-          risk: <span className={r.rank <= 3 ? "text-neon" : ""}>{r.risk.toFixed(3)}</span>,
+          risk: <span className={tier(r.rank)}>{r.risk.toFixed(3)}</span>,
           top_driver: (r.top_driver ?? "n/a") + (r.coverage < 1 ? ` (coverage ${Math.round(r.coverage * 100)}%)` : ""),
         }))}
       />
       <div className="flex items-center justify-between text-sm">
-        {page > 1 ? <Link className="hover:text-neon" href={`?page=${page - 1}`}>&lt; prev</Link> : <span />}
-        <span className="text-dim">page {page} / {pages}</span>
-        {page < pages ? <Link className="hover:text-neon" href={`?page=${page + 1}`}>next &gt;</Link> : <span />}
+        {page > 1 ? <Link className="font-mono hover:text-neon" href={`?page=${page - 1}`}>&lt; prev</Link> : <span />}
+        <span className="font-mono text-dim">page {page} / {pages}</span>
+        {page < pages ? <Link className="font-mono hover:text-neon" href={`?page=${page + 1}`}>next &gt;</Link> : <span />}
       </div>
     </div>
   );
