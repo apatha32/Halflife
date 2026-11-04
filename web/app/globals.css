@@ -1,23 +1,57 @@
 @import "tailwindcss";
 
-:root {
-  --surface: #fcfcfb;
-  --grid: #e8e7e3;
-  --muted: #52514e;
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --series-4: #eda100;
+@theme {
+  --color-ink: #000000;
+  --color-panel: #0a0a0a;
+  --color-line: #262626;
+  --color-dim: #8f8f8f;
+  --color-paper: #ffffff;
+  --color-neon: #39ff14;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface: #1a1a19;
-    --grid: #383835;
-    --muted: #c3c2b7;
-    --series-1: #3987e5;
-    --series-2: #d95926;
-    --series-3: #199e70;
-    --series-4: #c98500;
-  }
+:root {
+  --surface: #0a0a0a;
+  --grid: #262626;
+  --muted: #8f8f8f;
+  --series-1: #39ff14;
+  --series-2: #ffffff;
+  --series-3: #8f8f8f;
+  --series-4: #5c5c5c;
+  color-scheme: dark;
+}
+
+body {
+  background:
+    linear-gradient(rgba(57, 255, 20, 0.035) 1px, transparent 1px) 0 0 / 100% 32px,
+    #000;
+}
+
+::selection { background: #39ff14; color: #000; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes glow {
+  0%, 100% { text-shadow: 0 0 4px rgba(57, 255, 20, 0.5); }
+  50% { text-shadow: 0 0 14px rgba(57, 255, 20, 0.95); }
+}
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes scan { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+.rise { animation: rise 0.5s ease-out both; }
+.glow { animation: glow 2.4s ease-in-out infinite; }
+.cursor::after { content: "_"; color: #39ff14; animation: blink 1s steps(1) infinite; }
+.scanbar { position: relative; overflow: hidden; }
+.scanbar::after {
+  content: ""; position: absolute; inset: auto 0 0 0; height: 1px;
+  background: linear-gradient(90deg, transparent, #39ff14, transparent);
+  animation: scan 3s linear infinite;
+}
+.neon-btn { transition: box-shadow 0.2s, background-color 0.2s, color 0.2s; }
+.neon-btn:hover, .neon-btn:focus-visible { box-shadow: 0 0 12px rgba(57, 255, 20, 0.6); background: #39ff14; color: #000; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }

@@ -30,27 +30,29 @@ export default async function PullList({ searchParams }: { searchParams: Promise
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Pull list — {fleet.name}</h1>
-          <p className="text-sm text-stone-600 dark:text-stone-300">
+          <p className="text-xs tracking-widest text-neon uppercase">{fleet.name}</p>
+          <h1 className="mt-1 text-3xl font-bold">Pull list</h1>
+          <p className="mt-1 text-sm text-dim">
             Riskiest drives {rows[0] ? `scored ${rows[0].score_date}` : ""}. Risk ranks drives; it is not a calibrated probability.
           </p>
         </div>
-        <a href="/pull-list/export" className="rounded border border-stone-300 px-3 py-1.5 text-sm dark:border-stone-600">Export CSV</a>
+        <a href="/pull-list/export" className="neon-btn border border-neon px-3 py-1.5 text-sm text-neon">Export CSV</a>
       </div>
       <Table
         columns={COLUMNS}
         rows={rows.map((r) => ({
           ...r,
-          drive_id: <Link className="underline" href={`/drives/${encodeURIComponent(r.drive_id)}`}>{r.drive_id}</Link>,
-          age: r.age_days == null ? "—" : (r.age_days / 365).toFixed(1),
-          risk: r.risk.toFixed(3),
-          top_driver: (r.top_driver ?? "—") + (r.coverage < 1 ? ` (coverage ${Math.round(r.coverage * 100)}%)` : ""),
+          rank: <span className={r.rank <= 3 ? "glow font-bold text-neon" : ""}>{r.rank}</span>,
+          drive_id: <Link className="underline decoration-line underline-offset-4 transition-colors hover:text-neon hover:decoration-neon" href={`/drives/${encodeURIComponent(r.drive_id)}`}>{r.drive_id}</Link>,
+          age: r.age_days == null ? "n/a" : (r.age_days / 365).toFixed(1),
+          risk: <span className={r.rank <= 3 ? "text-neon" : ""}>{r.risk.toFixed(3)}</span>,
+          top_driver: (r.top_driver ?? "n/a") + (r.coverage < 1 ? ` (coverage ${Math.round(r.coverage * 100)}%)` : ""),
         }))}
       />
       <div className="flex items-center justify-between text-sm">
-        {page > 1 ? <Link href={`?page=${page - 1}`}>← Previous</Link> : <span />}
-        <span className="text-stone-500 dark:text-stone-400">Page {page} of {pages}</span>
-        {page < pages ? <Link href={`?page=${page + 1}`}>Next →</Link> : <span />}
+        {page > 1 ? <Link className="hover:text-neon" href={`?page=${page - 1}`}>&lt; prev</Link> : <span />}
+        <span className="text-dim">page {page} / {pages}</span>
+        {page < pages ? <Link className="hover:text-neon" href={`?page=${page + 1}`}>next &gt;</Link> : <span />}
       </div>
     </div>
   );

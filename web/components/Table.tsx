@@ -3,25 +3,26 @@ import type { ReactNode } from "react";
 export type Column = { key: string; label: string; numeric?: boolean; wide?: boolean };
 
 export default function Table({ columns, rows }: { columns: Column[]; rows: Record<string, ReactNode>[] }) {
+  const cls = (c: Column) => `${c.numeric ? "text-right tabular-nums" : ""} ${c.wide ? "hidden sm:table-cell" : ""}`;
   return (
-    <div className="overflow-x-auto rounded border border-stone-200 dark:border-stone-700">
+    <div className="overflow-x-auto border border-line bg-panel">
       <table className="w-full text-sm">
-        <thead className="bg-stone-50 text-left text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+        <thead className="border-b border-line text-left text-xs tracking-wider text-dim uppercase">
           <tr>
             {columns.map((c) => (
-              <th key={c.key} className={`px-3 py-2 font-medium whitespace-nowrap ${c.numeric ? "text-right" : ""} ${c.wide ? "hidden sm:table-cell" : ""}`}>
-                {c.label}
-              </th>
+              <th key={c.key} className={`px-3 py-2 font-medium whitespace-nowrap ${cls(c)}`}>{c.label}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i} className="border-t border-stone-200 dark:border-stone-700">
+            <tr
+              key={i}
+              className="rise border-t border-line/60 transition-colors hover:bg-neon/5"
+              style={{ animationDelay: `${Math.min(i, 25) * 25}ms` }}
+            >
               {columns.map((c) => (
-                <td key={c.key} className={`px-3 py-2 ${c.numeric ? "text-right tabular-nums" : ""} ${c.wide ? "hidden sm:table-cell" : ""}`}>
-                  {r[c.key]}
-                </td>
+                <td key={c.key} className={`px-3 py-2 ${cls(c)}`}>{r[c.key]}</td>
               ))}
             </tr>
           ))}

@@ -74,3 +74,8 @@ Known limitations (not fixed):
 - Re-scoring a date with fewer drives leaves earlier rows for drives no longer present (upsert never deletes).
 - Onboarding aliases include Northwind's own column names, so its 1.0 confidences overstate how well name matching generalizes.
 - Model risk is not calibrated; the image is 2.2 GB; the seed demo users have public passwords.
+
+## Phase 2: design (2026-11-04)
+- [x] Web app restyled: black/white with neon green (#39ff14), JetBrains Mono, scanline nav, staggered row entrances, glow on the top 3 risks, line-draw chart animation; all motion off under prefers-reduced-motion. Chart series told apart by green/white/gray plus dash patterns (legend + table view kept). No emojis or em dashes. Re-verified at 375px.
+- [x] GitHub Pages site in site/ (single static page, no build): animated stats, system design diagram in white + neon pink with flowing edges, pipeline, data-quality counts, model results with animated bars, cost curve drawn from models/<version>/cost_curve.json values. Deployed by .github/workflows/pages.yml.
+- "monodragon" read as monochrome + mono typeface.

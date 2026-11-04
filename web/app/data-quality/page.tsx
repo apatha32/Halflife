@@ -16,29 +16,38 @@ export default async function DataQuality() {
   const reports = (data ?? []).map((d) => d.report as Report);
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Data quality — {fleet?.name}</h1>
-      {reports.length === 0 && <p>No quality reports yet.</p>}
-      {reports.map((r) => (
-        <article key={r.run_at} className="space-y-3 rounded border border-stone-200 bg-white p-4 dark:border-stone-700 dark:bg-stone-950">
-          <h2 className="font-medium">Run {r.run_at.replace("T", " ").slice(0, 16)} UTC · data {r.data_start} to {r.data_end}</h2>
-          <p className="text-sm">
-            {n(r.rows_in)} rows in → {n(r.rows_out)} clean + {n(Object.values(r.quarantined).reduce((a, b) => a + b, 0))} quarantined
-            ({r.quarantined_failures} failure rows). {n(r.resets_fixed)} counter resets fixed ({n(r.rows_rebased)} rows rebased).
-          </p>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Table columns={[{ key: "k", label: "Quarantine reason" }, { key: "v", label: "Rows", numeric: true }]} rows={pairs(r.quarantined)} />
-            <Table columns={[{ key: "k", label: "Schema hash" }, { key: "v", label: "Rows", numeric: true }]} rows={pairs(r.schema_hashes)} />
-          </div>
-          {Object.keys(r.null_rate_change).length > 0 && (
-            <p className="text-sm text-stone-600 dark:text-stone-300">
-              Largest null-rate change vs previous run:{" "}
-              {(([k, v]) => `${k} ${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)} points`)(
-                Object.entries(r.null_rate_change).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0],
-              )}
+      <div>
+        <p className="text-xs tracking-widest text-neon uppercase">{fleet?.name}</p>
+        <h1 className="mt-1 text-3xl font-bold">Data quality</h1>
+      </div>
+      {reports.length === 0 && <p className="text-dim">No quality reports yet.</p>}
+      {reports.map((r) => {
+        const quarantined = Object.values(r.quarantined).reduce((a, b) => a + b, 0);
+        const change = Object.entries(r.null_rate_change).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
+        return (
+          <article key={r.run_at} className="space-y-4 border border-line bg-panel p-4">
+            <h2 className="text-xs tracking-wider text-dim uppercase">
+              Run {r.run_at.replace("T", " ").slice(0, 16)} UTC / data {r.data_start} to {r.data_end}
+            </h2>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[["rows in", r.rows_in], ["clean", r.rows_out], ["quarantined", quarantined], ["resets fixed", r.resets_fixed]].map(([k, v]) => (
+                <div key={k} className="border border-line px-3 py-2">
+                  <div className="text-xs tracking-wider text-dim uppercase">{k}</div>
+                  <div className={`text-lg font-bold tabular-nums ${k === "clean" ? "text-neon" : ""}`}>{n(Number(v))}</div>
+                </div>
+              ))}
+            </div>
+            <p className="text-sm text-dim">
+              {r.quarantined_failures} failure rows quarantined. {n(r.rows_rebased)} rows rebased after counter resets.
+              {change && ` Largest null-rate change vs previous run: ${change[0]} ${change[1] >= 0 ? "+" : ""}${(change[1] * 100).toFixed(1)} points.`}
             </p>
-          )}
-        </article>
-      ))}
+            <div className="grid gap-4 md:grid-cols-2">
+              <Table columns={[{ key: "k", label: "Quarantine reason" }, { key: "v", label: "Rows", numeric: true }]} rows={pairs(r.quarantined)} />
+              <Table columns={[{ key: "k", label: "Schema hash" }, { key: "v", label: "Rows", numeric: true }]} rows={pairs(r.schema_hashes)} />
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
 }
