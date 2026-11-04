@@ -1,0 +1,7 @@
+data/
+web/
+**/.venv/
+**/__pycache__/
+workers/tests/
+.env*
+.git/

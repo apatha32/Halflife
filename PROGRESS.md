@@ -10,7 +10,7 @@
 - [x] 7. Scoring — 2025-12-31: 34,147 Acme drives scored; re-run leaves 34,187 scores (incl. 40 seed), 179,244 history rows, 1 report
 - [x] 8. Web app — verified in headless Chrome at 375px: login, demo login, pull list (25/page, CSV 500 rows), drive detail, data quality, RLS (Acme cannot open Northwind drives), no horizontal overflow
 - [x] 9. Onboarding — Northwind CSV (36,204 rows) -> 712 duplicates quarantined -> 300 drives scored using only mappings/northwind.yaml; coverage 0.77 vs Acme 0.85
-- [ ] 10. Deploy prep and README
+- [x] 10. Deploy prep and README — Docker image builds (2.2 GB, non-root) and runs clean+features on the fixture; deploy steps in docs/deploy.md
 - [ ] Finish: full tests, lint, staff-engineer review
 
 ## Decisions
@@ -56,3 +56,6 @@
 - `--apply` reads only the saved YAML; data goes to data/fleets/<slug>/{bronze,silver,gold,reports} and reuses clean.run -> features -> score. Required columns (drive_id, date, model) are checked at this boundary.
 - Clean + report gating moved into clean.run()/report.save() so the CLI and onboarding share them.
 - Alias lists include the names used by make_northwind.py, so Northwind scores 1.0 on every column; real customer files would rely more on the value checks. Logged as a limitation.
+- Docker: build context is the repo root so the committed model ships in the image; package installed editable so ROOT resolves to /app; base image pinned to ghcr.io/astral-sh/uv:0.13.4-python3.12-trixie-slim (no bookworm tag for 0.13.4); libgomp1 for LightGBM.
+- Railway mounts volumes as root, so the deploy sets RAILWAY_RUN_UID=0 rather than dropping the non-root user from the image.
+- railway.json runs ingest -> clean -> features -> score once (restartPolicyType NEVER); train is not in the job — the committed model is used.
