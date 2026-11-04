@@ -1,6 +1,14 @@
+import hashlib
 import os
+import uuid
+from datetime import date, timedelta
+from pathlib import Path
 
 import duckdb
+
+from halflife import DATA
+
+FIXTURE = Path(__file__).parents[2] / "tests" / "fixtures" / "onepct"
 
 
 def connect() -> tuple[duckdb.DuckDBPyConnection, str]:
@@ -15,3 +23,39 @@ def connect() -> tuple[duckdb.DuckDBPyConnection, str]:
     )
     path = f"s3://{e['B2_BUCKET']}/{e['B2_PREFIX']}"
     return con, f"iceberg_scan('{path}', version = '?', allow_moved_paths = true)"
+
+
+def sampled(pct: float) -> str:
+    """SQL predicate keeping a stable pct% of drives (nested: 1% is a subset of 10%)."""
+    return f"md5_number_lower(serial_number) % 10000 < {round(pct * 100)}"
+
+
+def ingest_month(con, src: str, lo: date, hi: date, pct: float, run_id: str) -> int:
+    """Write one month of sampled rows to bronze (and the 1% fixture), replacing it."""
+    con.execute(
+        f"CREATE OR REPLACE TEMP TABLE m AS SELECT * FROM {src} "
+        f"WHERE date BETWEEN DATE '{lo}' AND DATE '{hi}' AND {sampled(pct)}"
+    )
+    counts = con.execute("SELECT count(COLUMNS(*)) FROM m").fetchone()
+    present = [c for c, n in zip(con.table("m").columns, counts) if n]
+    schema_hash = hashlib.md5(",".join(sorted(present)).encode()).hexdigest()[:12]
+    part = f"year={lo.year}/month={lo.month:02d}"
+    for root, where in [(DATA / "bronze", "true"), (FIXTURE / "bronze", sampled(min(pct, 1)))]:
+        (root / part).mkdir(parents=True, exist_ok=True)
+        con.execute(
+            f"COPY (SELECT *, '{run_id}' AS _run_id, '{schema_hash}' AS _schema_hash "
+            f"FROM m WHERE {where}) TO '{root / part / 'data.parquet'}'"
+        )
+    return con.execute("SELECT count(*) FROM m").fetchone()[0]
+
+
+def ingest(start: date, end: date, pct: float) -> None:
+    """Ingest [start, end] month by month from the Drive Stats Iceberg table."""
+    con, src = connect()
+    run_id = uuid.uuid4().hex[:12]
+    lo = start
+    while lo <= end:
+        next_month = (lo.replace(day=1) + timedelta(days=32)).replace(day=1)
+        hi = min(end, next_month - timedelta(days=1))
+        print(f"{lo:%Y-%m}: {ingest_month(con, src, lo, hi, pct, run_id):,} rows")
+        lo = next_month

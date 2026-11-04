@@ -8,3 +8,4 @@ node_modules/
 .next/
 *.tsbuildinfo
 .DS_Store
+workers/tests/fixtures/onepct/

@@ -1,12 +1,23 @@
+from datetime import datetime
+
 import typer
 
 app = typer.Typer(no_args_is_help=True)
+Day = typer.Option(formats=["%Y-%m-%d"])
 
 
 @app.command()
-def ingest():
+def ingest(
+    start: datetime = Day,
+    end: datetime = Day,
+    sample_pct: float = typer.Option(10.0, min=0.01, max=100),
+):
     """Load Backblaze Drive Stats into bronze."""
-    raise NotImplementedError
+    from halflife.ingest import ingest
+
+    if start > end:
+        raise typer.BadParameter("--start must be on or before --end")
+    ingest(start.date(), end.date(), sample_pct)
 
 
 @app.command()
