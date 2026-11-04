@@ -5,6 +5,7 @@ description = "Drive-failure prediction on Backblaze Drive Stats."
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "duckdb>=2.0.0",
+    "httpx>=0.28.1",
     "lightgbm>=4.7.0",
     "matplotlib>=3.11.2",
     "polars>=2.1.0",

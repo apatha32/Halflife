@@ -7,7 +7,7 @@
 - [x] 4. Quality report — data/reports/<run_at>.json + .md; fixture: 2,337,844 in = 2,337,494 out + 350 quarantined
 - [x] 5. Features and model — full run: test PR-AUC LightGBM 0.078 / logistic 0.061 / naive 0.021; P@50 11.7% vs 3.8%; R@50 18.1% vs 5.9%. Model 20261104-1138.
 - [x] 6. Supabase — local stack via CLI; RLS pgTAP test passes (4 assertions); demo password login works
-- [ ] 7. Scoring
+- [x] 7. Scoring — 2025-12-31: 34,147 Acme drives scored; re-run leaves 34,187 scores (incl. 40 seed), 179,244 history rows, 1 report
 - [ ] 8. Web app
 - [ ] 9. Onboarding
 - [ ] 10. Deploy prep and README
@@ -42,3 +42,9 @@
 - drive_scores also has age_days (pull list column) and coverage (step 9) so the schema stays one migration.
 - Seed: fleets Acme Storage / Northwind, demo@acme.test and demo@northwind.test (password halflife-demo), 20 placeholder SEED- drives per fleet scored 2025-01-01; real scores have later dates, and pull_list shows the latest date.
 - RLS test runs with `supabase test db` (make test-db) and as a separate CI job that starts the Supabase DB.
+- SHAP via LightGBM `pred_contrib=True` (exact TreeSHAP, no `shap` dependency); logistic fallback uses coef x standardized value. Only risk-raising contributions become labels; missing values get "<attribute> not reported".
+- Supabase writes are PostgREST upserts over httpx (one small dependency, vs supabase-py) in 1,000-row batches, keyed on the table primary keys.
+- drive_history is sent for the top 1,000 ranked drives only (180 days each ~= 180k rows); all ~34k would be ~6M rows per run for pages nobody opens.
+- Rebased counters are cast back to BIGINT in clean (sum() widened them to HUGEINT -> floats).
+- Risk is a ranking score, not a calibrated probability (negatives downsampled + class weights push top risks to ~1.0). The UI shows rank and relative risk.
+- coverage = share of the 9 SMART attributes the drive reports that day (Toshiba/HGST lack 187/188 -> 0.78).

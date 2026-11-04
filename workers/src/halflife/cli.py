@@ -4,6 +4,7 @@ import typer
 
 app = typer.Typer(no_args_is_help=True)
 Day = typer.Option(formats=["%Y-%m-%d"])
+ScoreDay = typer.Option(..., "--date", formats=["%Y-%m-%d"])
 
 
 @app.command()
@@ -82,9 +83,13 @@ def train():
 
 
 @app.command()
-def score():
+def score(day: datetime = ScoreDay, fleet: str = "Acme Storage"):
     """Score active drives and upsert to Supabase."""
-    raise NotImplementedError
+    from halflife import DATA, ROOT
+    from halflife.score import score
+
+    model_dir = max((ROOT / "models").iterdir())
+    print(f"{score(day.date(), fleet, DATA, model_dir):,} drives scored with {model_dir.name}")
 
 
 @app.command()

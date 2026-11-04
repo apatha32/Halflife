@@ -48,7 +48,7 @@ def clean(bronze: Path, silver: Path) -> duckdb.DuckDBPyConnection:
         f"greatest(lag(smart_{c}_raw) OVER w - smart_{c}_raw, 0) AS drop_{c}" for c in COUNTERS
     )
     smart = ", ".join(
-        f"smart_{a}_raw + coalesce(sum(drop_{a}) OVER w, 0) AS smart_{a}"
+        f"(smart_{a}_raw + coalesce(sum(drop_{a}) OVER w, 0))::BIGINT AS smart_{a}"
         if a in COUNTERS
         else f"smart_{a}_raw AS smart_{a}"
         for a in ATTRS
