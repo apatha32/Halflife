@@ -1,0 +1,19 @@
+[project]
+name = "halflife"
+version = "0.1.0"
+description = "Drive-failure prediction on Backblaze Drive Stats."
+requires-python = ">=3.12,<3.13"
+dependencies = ["typer"]
+
+[project.scripts]
+halflife = "halflife.cli:app"
+
+[dependency-groups]
+dev = ["pytest", "ruff"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
