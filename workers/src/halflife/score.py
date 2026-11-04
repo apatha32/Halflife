@@ -64,27 +64,27 @@ def drivers(art: dict, df: pl.DataFrame) -> list[list[str]]:
     ]
 
 
-def upsert(table: str, rows: list[dict], conflict: str) -> None:
-    """Upsert rows to Supabase in batches with the service-role key."""
+def rest(path: str) -> tuple[str, dict]:
+    """Supabase REST URL and service-role headers."""
     key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-    headers = {
+    return f"{os.environ['SUPABASE_URL']}/rest/v1/{path}", {
         "apikey": key,
         "Authorization": f"Bearer {key}",
         "Prefer": "resolution=merge-duplicates,return=minimal",
     }
-    url = f"{os.environ['SUPABASE_URL']}/rest/v1/{table}?on_conflict={conflict}"
+
+
+def upsert(table: str, rows: list[dict], conflict: str) -> None:
+    """Upsert rows to Supabase in batches with the service-role key."""
+    url, headers = rest(f"{table}?on_conflict={conflict}")
     for i in range(0, len(rows), 1000):
         httpx.post(url, json=rows[i : i + 1000], headers=headers, timeout=120).raise_for_status()
 
 
 def fleet_id(name: str) -> str:
     """Look up a fleet's id by name."""
-    key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-    r = httpx.get(
-        f"{os.environ['SUPABASE_URL']}/rest/v1/fleets",
-        params={"name": f"eq.{name}", "select": "id"},
-        headers={"apikey": key, "Authorization": f"Bearer {key}"},
-    )
+    url, headers = rest("fleets")
+    r = httpx.get(url, params={"name": f"eq.{name}", "select": "id"}, headers=headers)
     return r.raise_for_status().json()[0]["id"]
 
 
@@ -104,43 +104,34 @@ def scores(art: dict, df: pl.DataFrame, fid: str, version: str) -> pl.DataFrame:
     )
 
 
+def history(data: Path, fid: str, day: date, drive_ids: list[str]) -> list[dict]:
+    """Last 180 days of charted SMART values for the given drives."""
+    return (
+        duckdb.sql(
+            f"""SELECT '{fid}' AS fleet_id, drive_id, date::VARCHAR AS date, smart_5, smart_187,
+        smart_197, smart_198, smart_194 FROM '{data}/silver/drive_days.parquet'
+        WHERE list_contains(?, drive_id) AND date BETWEEN DATE '{day}' - 179 AND DATE '{day}'""",
+            params=[drive_ids],
+        )
+        .pl()
+        .to_dicts()
+    )
+
+
 def score(day: date, fleet: str, data: Path, model_dir: Path) -> int:
     """Score drives active on `day` and upsert drives, scores, history and quality report."""
     art = joblib.load(model_dir / "model.pkl")
     df = duckdb.sql(f"SELECT * FROM '{data}/gold/features.parquet' WHERE date = '{day}'").pl()
     fid = fleet_id(fleet)
     s = scores(art, df, fid, model_dir.name)
-    upsert(
-        "drives",
-        s.select("fleet_id", "drive_id", "model", "manufacturer", "capacity_tb").to_dicts(),
-        "fleet_id,drive_id",
-    )
-    upsert(
-        "drive_scores",
-        s.select(
-            "fleet_id",
-            "drive_id",
-            "score_date",
-            "risk",
-            "rank",
-            "age_days",
-            "coverage",
-            "top_drivers",
-            "model_version",
-        )
-        .fill_nan(None)
-        .to_dicts(),
-        "fleet_id,drive_id,score_date",
-    )
-    hist = duckdb.sql(
-        f"""SELECT '{fid}' AS fleet_id, drive_id, date::VARCHAR AS date, smart_5, smart_187,
-        smart_197, smart_198, smart_194 FROM '{data}/silver/drive_days.parquet'
-        WHERE list_contains(?, drive_id) AND date BETWEEN DATE '{day}' - 179 AND DATE '{day}'""",
-        params=[s["drive_id"].head(HISTORY_DRIVES).to_list()],
-    ).pl()
-    upsert("drive_history", hist.to_dicts(), "fleet_id,drive_id,date")
-    report = max((data / "reports").glob("*.json"))
-    r = json.loads(report.read_text())
+    drives = s.select("fleet_id", "drive_id", "model", "manufacturer", "capacity_tb")
+    upsert("drives", drives.to_dicts(), "fleet_id,drive_id")
+    cols = ["fleet_id", "drive_id", "score_date", "risk", "rank", "age_days", "coverage"]
+    rows = s.select(*cols, "top_drivers", "model_version").fill_nan(None).to_dicts()
+    upsert("drive_scores", rows, "fleet_id,drive_id,score_date")
+    top = s["drive_id"].head(HISTORY_DRIVES).to_list()
+    upsert("drive_history", history(data, fid, day, top), "fleet_id,drive_id,date")
+    r = json.loads(max((data / "reports").glob("*.json")).read_text())
     upsert(
         "quality_reports",
         [{"fleet_id": fid, "run_at": r["run_at"], "report": r}],

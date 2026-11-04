@@ -50,12 +50,12 @@ def ingest_month(con, src: str, lo: date, hi: date, pct: float, run_id: str) -> 
 
 
 def ingest(start: date, end: date, pct: float) -> None:
-    """Ingest [start, end] month by month from the Drive Stats Iceberg table."""
+    """Ingest every whole month touching [start, end]; each month's partition is replaced."""
     con, src = connect()
     run_id = uuid.uuid4().hex[:12]
-    lo = start
+    lo = start.replace(day=1)
     while lo <= end:
-        next_month = (lo.replace(day=1) + timedelta(days=32)).replace(day=1)
-        hi = min(end, next_month - timedelta(days=1))
+        next_month = (lo + timedelta(days=32)).replace(day=1)
+        hi = next_month - timedelta(days=1)
         print(f"{lo:%Y-%m}: {ingest_month(con, src, lo, hi, pct, run_id):,} rows")
         lo = next_month

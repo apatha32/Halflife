@@ -38,7 +38,12 @@ TARGETS = {
     "smart_198": (["offline uncorrectable"], lambda p: p["min"] >= 0),
     "smart_199": (["crc error count", "udma crc errors"], lambda p: p["min"] >= 0),
 }
-NUM = "try_cast(replace(\"{c}\", ',', '') AS DOUBLE)"
+NUM = "try_cast(replace({c}, ',', '') AS DOUBLE)"
+
+
+def ident(name: str) -> str:
+    """Quote a customer-supplied column name as a SQL identifier."""
+    return '"' + name.replace('"', '""') + '"'
 
 
 def norm(s: str) -> str:
@@ -51,12 +56,11 @@ def profile(file: Path) -> dict[str, dict]:
     con.execute(f"CREATE TABLE f AS SELECT * FROM read_csv('{file}', all_varchar = true)")
     out = {}
     for c in con.table("f").columns:
-        n = NUM.format(c=c)
-        dates = ", ".join(
-            f'count(try_strptime("{c}", \'{f}\')) / count("{c}")' for f in DATE_FORMATS
-        )
-        row = con.execute(f"""SELECT count({n}) / count("{c}"), min({n}), median({n}), max({n}),
-            count(DISTINCT "{c}"), {dates} FROM f""").fetchall()[0]
+        q = ident(c)
+        n = NUM.format(c=q)
+        dates = ", ".join(f"count(try_strptime({q}, '{f}')) / count({q})" for f in DATE_FORMATS)
+        row = con.execute(f"""SELECT count({n}) / count({q}), min({n}), median({n}), max({n}),
+            count(DISTINCT {q}), {dates} FROM f""").fetchall()[0]
         best = max(range(len(DATE_FORMATS)), key=lambda i: row[5 + i] or 0)
         nums = [math.nan if v is None else v for v in row[1:4]]
         out[c] = {
@@ -94,7 +98,7 @@ def propose(prof: dict[str, dict]) -> dict:
 def to_bronze(file: Path, mapping: dict, bronze: Path) -> int:
     """Rewrite a customer file as bronze Parquet using only the saved mapping."""
     cols = mapping["columns"]
-    src = lambda t: cols[t]["source"]
+    src = lambda t: ident(cols[t]["source"])
 
     def num(t, cast="BIGINT"):
         if t not in cols:
@@ -110,9 +114,9 @@ def to_bronze(file: Path, mapping: dict, bronze: Path) -> int:
         hashlib.md5(yaml.dump(mapping).encode()).hexdigest()[:12],
     )
     bronze.mkdir(parents=True, exist_ok=True)
-    duckdb.sql(f"""COPY (SELECT "{src("drive_id")}" AS serial_number,
-        try_strptime("{src("date")}", '{mapping["date_format"]}')::DATE AS date,
-        "{src("model")}" AS model, ({num("capacity_tb", "DOUBLE")} * 1e12)::BIGINT AS capacity_bytes,
+    duckdb.sql(f"""COPY (SELECT {src("drive_id")} AS serial_number,
+        try_strptime({src("date")}, '{mapping["date_format"]}')::DATE AS date,
+        {src("model")} AS model, ({num("capacity_tb", "DOUBLE")} * 1e12)::BIGINT AS capacity_bytes,
         {num("failure", "INTEGER")} AS failure, {smart},
         '{run_id}' AS _run_id, 'onboard-{schema}' AS _schema_hash
         FROM read_csv('{file}', all_varchar = true)) TO '{bronze}/data.parquet'""")

@@ -77,7 +77,7 @@ def score(day: datetime = ScoreDay, fleet: str = "Acme Storage"):
     from halflife import DATA, ROOT
     from halflife.score import score
 
-    model_dir = max((ROOT / "models").iterdir())
+    model_dir = max((ROOT / "models").glob("*/model.pkl")).parent
     print(f"{score(day.date(), fleet, DATA, model_dir):,} drives scored with {model_dir.name}")
 
 
@@ -103,7 +103,7 @@ def onboard(fleet: str = Required, file: Path = Required, apply: bool = False):
         yaml.safe_load(path.read_text()),
         fleet,
         DATA / "fleets" / slug,
-        max((ROOT / "models").iterdir()),
+        max((ROOT / "models").glob("*/model.pkl")).parent,
         int(os.environ.get("HORIZON_DAYS", "30")),
     )
     print(

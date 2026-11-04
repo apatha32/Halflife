@@ -11,7 +11,7 @@
 - [x] 8. Web app — verified in headless Chrome at 375px: login, demo login, pull list (25/page, CSV 500 rows), drive detail, data quality, RLS (Acme cannot open Northwind drives), no horizontal overflow
 - [x] 9. Onboarding — Northwind CSV (36,204 rows) -> 712 duplicates quarantined -> 300 drives scored using only mappings/northwind.yaml; coverage 0.77 vs Acme 0.85
 - [x] 10. Deploy prep and README — Docker image builds (2.2 GB, non-root) and runs clean+features on the fixture; deploy steps in docs/deploy.md
-- [ ] Finish: full tests, lint, staff-engineer review
+- [x] Finish: 12 Python tests + RLS pgTAP test pass, lint passes, review fixes below
 
 ## Decisions
 - Iceberg access follows Backblaze's "Iceberg on B2" post: `iceberg_scan(path, version='?', allow_moved_paths=true)` with `unsafe_enable_version_guessing`; no metadata file path needed.
@@ -59,3 +59,18 @@
 - Docker: build context is the repo root so the committed model ships in the image; package installed editable so ROOT resolves to /app; base image pinned to ghcr.io/astral-sh/uv:0.13.4-python3.12-trixie-slim (no bookworm tag for 0.13.4); libgomp1 for LightGBM.
 - Railway mounts volumes as root, so the deploy sets RAILWAY_RUN_UID=0 rather than dropping the non-root user from the image.
 - railway.json runs ingest -> clean -> features -> score once (restartPolicyType NEVER); train is not in the job — the committed model is used.
+
+## Review (finish)
+Fixed:
+- HIGH, idempotency/data loss: `ingest --start/--end` inside a month overwrote that month's partition with only the requested days (a nightly 1-day ingest would have wiped the month). Ingest now always processes whole months; test added.
+- MEDIUM, SQL injection: customer CSV column names were interpolated inside "..." unescaped. Now quoted via `ident()`; test with a quote in a header.
+- LOW: latest-model lookup used max(iterdir()) (stray files could win); now the newest `*/model.pkl`. score() trimmed from 43 lines (shared REST helper, history() split out).
+Checked, no change needed:
+- Silent row drops: bronze -> silver adds up (rows in = out + quarantined, every quarantined row has a reason); features join to lifecycle is lossless (22,485,165 = 22,485,165); training only drops y = NULL rows by design.
+- Time leakage: all windows are PRECEDING..CURRENT ROW (sabotage-tested), splits have 30-day gaps = horizon, downsampling and imputer fitting use train only, model chosen on validation.
+- Secrets: .env, web/.env.local, data/ and the fixture are untracked; only the service role writes; web uses the anon key + user session.
+Known limitations (not fixed):
+- Onboarding: values that fail to parse become NULL without a per-value count; the null-rate section of the quality report is the only signal.
+- Re-scoring a date with fewer drives leaves earlier rows for drives no longer present (upsert never deletes).
+- Onboarding aliases include Northwind's own column names, so its 1.0 confidences overstate how well name matching generalizes.
+- Model risk is not calibrated; the image is 2.2 GB; the seed demo users have public passwords.

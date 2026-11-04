@@ -33,3 +33,9 @@ def test_propose_detects_columns_fahrenheit_and_dates_then_converts(tmp_path):
         f"min(date) FROM '{tmp_path}/bronze/data.parquet'"
     ).fetchall()[0]
     assert b[:4] == (35, 1199, 20000, 0) and str(b[4]) == "2025-01-01"
+
+
+def test_column_names_with_quotes_are_safe(tmp_path):
+    f = tmp_path / "q.csv"
+    f.write_text('"Serial ""No""",Date,Model\nA,2025-01-01,M\nB,2025-01-01,M\n')
+    assert profile(f)['Serial "No"']["distinct"] == 2
