@@ -118,5 +118,11 @@ Known limitations (not fixed):
 - Known: a new upload replaces that fleet's data (no upload history yet).
 - Docs: README, docs/deploy.md (uploads service, roles), evaluation.md and the project page updated to the 2024-01..2026-09 data and model 20261108-1541.
 
+## Design pass with /apple-design (2026-11-08)
+- [x] Dashboard (/dashboard, now the home page): a one-sentence summary (expect ~33 failures in 30 days; this week's 50 pulls cover 6.0), four display cards (expected failures 7/30/90d, pull list coverage 18%, new alerts, data and model health with drift in plain words), the risk cliff (top 500 drives sorted by 30-day risk, pull list highlighted, hover shows the drive, click opens it), risk-band counts, top 5 to pull, latest alerts. Totals come from a new `fleet_summary()` SQL function (security invoker, RLS test added) because the API caps reads at 1,000 rows.
+- [x] Motion per motion.md ("avoid adding motion to UI interactions that occur frequently"): one orchestrated load moment on the dashboard (cards rise, numbers count up, bars grow); infinite rank glow made static; nav scan line plays once; table rows animate only the first 12, briefly. All off under reduced motion (verified: 0 running animations).
+- [x] Project page: stat tiles replaced by the risk cliff as the hero signature (real top-500 data); problem cards labelled by meaning instead of 01/02/03 (not a sequence); new product section with the real dashboard in a window frame that settles flat on scroll; card hover glow; nav scan plays once.
+- Contrast measured: all text tokens pass 4.5:1 (dim #8f8f8f on #141414 5.7:1, neon-700 on panel 4.8:1, neon 15.5:1).
+
 ## Next session
 - Only deploy is left: user runs `supabase login`, `railway login`, `vercel login` (Railway Hobby $5 plan confirmed; CLIs installed in ~/.local). Then follow docs/deploy.md, including the second Railway service for uploads. Optional: Slack webhook URL.

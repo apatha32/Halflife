@@ -13,11 +13,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="flex min-h-screen flex-col font-sans text-paper">
         <nav className="scanbar border-b border-line bg-ink/90 backdrop-blur">
           <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 text-sm">
-            <Link href="/pull-list" className="cursor mr-auto font-mono text-base font-bold tracking-widest uppercase">
+            <Link href="/dashboard" className="cursor mr-auto font-mono text-base font-bold tracking-widest uppercase">
               half<span className="text-neon">life</span>
             </Link>
             {data.user && (
               <>
+                <Link className="text-dim transition-colors hover:text-neon" href="/dashboard">dashboard</Link>
                 <Link className="text-dim transition-colors hover:text-neon" href="/pull-list">pull list</Link>
                 <Link className="text-dim transition-colors hover:text-neon" href="/data-quality">data quality</Link>
                 <Link className="text-dim transition-colors hover:text-neon" href="/alerts">alerts</Link>

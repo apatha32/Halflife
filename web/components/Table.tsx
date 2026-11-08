@@ -19,7 +19,7 @@ export default function Table({ columns, rows }: { columns: Column[]; rows: Reco
             <tr
               key={i}
               className="rise border-t border-line/60 hover:bg-neon-900/40 transition-colors hover:bg-neon-900/40"
-              style={{ animationDelay: `${Math.min(i, 25) * 25}ms` }}
+              style={i < 12 ? { animationDelay: `${i * 20}ms` } : { animation: "none" }}
             >
               {columns.map((c) => (
                 <td key={c.key} className={`px-3 py-2 ${cls(c)}`}>{r[c.key]}</td>

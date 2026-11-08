@@ -47,7 +47,7 @@ a { color: var(--paper); text-decoration-color: var(--neon); text-underline-offs
 a:hover { color: var(--neon); }
 .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
 nav { position: sticky; top: 0; z-index: 5; background: rgba(0,0,0,.85); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); overflow: hidden; }
-nav::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--neon-800), var(--neon), var(--neon-800), transparent); animation: scan 3s linear infinite; }
+nav::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--neon-800), var(--neon), var(--neon-800), transparent); animation: scan 1.6s var(--ease) both; }
 nav .wrap { display: flex; flex-wrap: wrap; gap: 6px 20px; align-items: center; padding: 12px 16px; font-size: 13px; }
 nav .brand { margin-right: auto; font-family: var(--mono); font-weight: 800; letter-spacing: .2em; text-transform: uppercase; text-decoration: none; }
 nav a:not(.brand) { color: var(--dim); text-decoration: none; font-family: var(--mono); background: linear-gradient(var(--neon), var(--neon)) 0 100% / 0 1px no-repeat; transition: color .4s var(--ease), background-size .4s var(--ease); }
@@ -70,12 +70,32 @@ section { padding: 72px 0; border-top: 1px solid var(--line); }
 .btn:hover, .btn:focus-visible { background: linear-gradient(180deg, var(--neon-300), var(--neon) 45%, var(--neon-600)); color: var(--ink); box-shadow: 0 0 18px rgba(57,255,20,.45), 0 0 44px rgba(38,200,12,.2); transform: translateY(-1px); }
 .btn.ghost { border-color: #3a3a3a; color: var(--paper); background: linear-gradient(180deg, #161616, #0b0b0b); }
 .btn.ghost:hover { background: linear-gradient(180deg, #222, #111); color: var(--paper); box-shadow: 0 0 0 1px #555; }
+.cliff { margin: 48px 0 0; border: 1px solid var(--line); border-radius: 10px; padding: 18px 18px 14px; background: linear-gradient(180deg, #121212, #070707); }
+.cliff figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; font-size: 13px; margin-bottom: 10px; }
+.cliff .scroll { overflow-x: auto; }
+.cliff svg { display: block; width: 100%; min-width: 640px; height: auto; }
+.cliff svg rect { transform-box: fill-box; transform-origin: bottom; }
+.cliff.in svg rect { animation: grow .8s var(--ease) both; }
+.cliff svg text { font: 14px var(--mono); }
+.cliff-note { margin: 12px 0 0; color: var(--soft); font-size: 15px; }
+.cliff-note b { color: var(--paper); font-weight: 600; }
+.cliff-note b.neon { color: var(--neon); }
+@keyframes grow { from { transform: scaleY(0); } }
+.shot { margin-top: 24px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #0b0b0b; box-shadow: 0 30px 80px -30px rgba(57,255,20,.25); transform: perspective(1400px) rotateX(6deg) scale(.97); transform-origin: top; transition: transform 1.2s var(--ease), box-shadow 1.2s var(--ease); }
+.shot.in { transform: none; box-shadow: 0 30px 80px -40px rgba(57,255,20,.35); }
+.shot .bar3 { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #161616, #0d0d0d); }
+.shot .bar3 i { width: 10px; height: 10px; border-radius: 50%; background: #2a2a2a; }
+.shot .bar3 span { margin-left: 10px; font: 12px var(--mono); color: var(--dim); }
+.shot img { display: block; width: 100%; height: auto; }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 48px; }
 .stat { border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(180deg, #151515, #0b0b0b 60%, #060606); padding: 16px; }
 .stat b { display: block; font-family: var(--mono); font-size: 30px; font-weight: 800; color: var(--neon); font-variant-numeric: tabular-nums; text-shadow: 0 0 10px rgba(57,255,20,.45); }
 .stat span { font-family: var(--mono); font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
 .card { border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(180deg, #141414, #0b0b0b 55%, #070707); padding: 18px; }
+.card { position: relative; overflow: hidden; }
+.card::after { content: ""; position: absolute; top: -60px; right: -60px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(57,255,20,.12), transparent 70%); opacity: 0; transition: opacity .6s var(--ease); pointer-events: none; }
+.card:hover::after { opacity: 1; }
 .card:hover { border-color: var(--neon-700); transform: translateY(-3px); box-shadow: 0 10px 30px -12px rgba(57,255,20,.35); background: linear-gradient(180deg, rgba(10,51,4,.55), #0b0b0b 60%, #070707); }
 .card .n { color: var(--neon-300); font-family: var(--mono); font-size: 12px; }
 .card p { margin: 0; color: var(--soft); font-size: 15px; }
@@ -130,14 +150,14 @@ footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--d
 @media (max-width: 560px) { .bar { grid-template-columns: 96px 1fr 56px; font-size: 12px; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  .reveal, .diagram .box { opacity: 1; transform: none; }
+  .reveal, .diagram .box, .shot { opacity: 1; transform: none; filter: none; }
 }
 </style>
 </head>
 <body>
 <nav><div class="wrap">
   <a class="brand" href="#top">half<span class="neon">life</span></a>
-  <a href="#system">system</a><a href="#data">data</a><a href="#model">model</a><a href="#run">run</a>
+  <a href="#product">product</a><a href="#system">system</a><a href="#data">data</a><a href="#model">model</a><a href="#run">run</a>
   <a href="https://github.com/apatha32/Halflife">github</a>
 </div></nav>
 
@@ -149,22 +169,36 @@ footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--d
     <a class="btn" href="https://github.com/apatha32/Halflife">View the code</a>
     <a class="btn ghost" href="#system">See the system</a>
   </div>
-  <div class="stats">
-    <div class="stat"><b data-count="32148944">32,148,944</b><span>drive-days ingested</span></div>
-    <div class="stat"><b data-count="37291">37,291</b><span>drives scored nightly</span></div>
-    <div class="stat"><b data-count="2.1" data-dec="1" data-suffix="x">2.1x</b><span>failures caught vs naive rule</span></div>
-    <div class="stat"><b data-count="6525">6,525</b><span>bad rows quarantined, with reasons</span></div>
-  </div>
+  <figure class="cliff reveal" id="cliff">
+    <figcaption>
+      <span class="kicker" style="margin:0">the risk cliff</span>
+      <span class="dim">37,291 drives scored for 2026-09-30, top 500 shown, sorted by chance of failing within 30 days</span>
+    </figcaption>
+    <div class="scroll"><svg id="cliffsvg" viewBox="0 0 960 300" role="img" aria-label="Sorted 30-day failure risk of the 500 riskiest of 37,291 drives. The first 50, this week's pull list, hold 6.0 expected failures; the next 450 hold 9.9."></svg></div>
+    <p class="cliff-note">Expect about <b>33 failures</b> across the fleet in the next 30 days. This week's <b class="neon">50 pulls cover 6.0</b> of them, about <b>2x</b> what the naive SMART rule would catch.</p>
+  </figure>
 </div></header>
 
 <section id="problem"><div class="wrap reveal">
   <p class="kicker">the problem</p>
   <h2>Every drive dies. The question is which ones, and when.</h2>
   <div class="grid">
-    <div class="card"><p class="n">01</p><h3>Surprise failures cost</h3><p>Storage operators lose redundancy, rebuild time and on-call hours when a drive dies without warning.</p></div>
-    <div class="card"><p class="n">02</p><h3>Blind swaps cost too</h3><p>Pulling drives "just in case" wastes hardware and technician time, and most pulled drives were healthy.</p></div>
-    <div class="card"><p class="n">03</p><h3>Halflife ranks the fleet</h3><p>Every drive gets a calibrated chance of failing within 7, 30 and 90 days, so a team that can replace K drives a week pulls the right K, with reasons in plain language and alerts when a drive turns risky.</p></div>
+    <div class="card"><p class="n">the cost of surprise</p><h3>Surprise failures cost</h3><p>Storage operators lose redundancy, rebuild time and on-call hours when a drive dies without warning.</p></div>
+    <div class="card"><p class="n">the cost of caution</p><h3>Blind swaps cost too</h3><p>Pulling drives "just in case" wastes hardware and technician time, and most pulled drives were healthy.</p></div>
+    <div class="card"><p class="n">what halflife does</p><h3>Halflife ranks the fleet</h3><p>Every drive gets a calibrated chance of failing within 7, 30 and 90 days, so a team that can replace K drives a week pulls the right K, with reasons in plain language and alerts when a drive turns risky.</p></div>
   </div>
+</div></section>
+
+<section id="product"><div class="wrap">
+  <div class="reveal">
+    <p class="kicker">the product</p>
+    <h2>A dashboard that answers one question</h2>
+    <p class="dim">Is the fleet OK this week, and which drives do I pull? Every number below links to the drives behind it: the pull list, each drive's sensor history and reasons, alerts, data quality and uploads.</p>
+  </div>
+  <figure class="shot" id="shot">
+    <div class="bar3"><i></i><i></i><i></i><span>halflife / dashboard / Acme Storage</span></div>
+    <img src="dashboard.jpg" width="1920" height="1380" loading="lazy" alt="Halflife dashboard: a headline expecting 33 failures in 30 days across 37,291 drives, four cards (expected failures, pull list coverage 18%, 507 new alerts, data and model on watch), the risk cliff chart of the top 500 drives, the top five drives to pull and the latest alerts.">
+  </figure>
 </div></section>
 
 <section id="system"><div class="wrap">
@@ -398,6 +432,32 @@ function drawCurve() {
   }
 }
 
+const CLIFF = [0.2798,0.2295,0.2162,0.1861,0.1798,0.1734,0.1668,0.1657,0.1639,0.1617,0.1508,0.1492,0.1443,0.1353,0.1338,0.1319,0.1301,0.1296,0.1277,0.1152,0.1135,0.1131,0.1108,0.1099,0.1065,0.1045,0.1036,0.1012,0.0964,0.0953,0.0936,0.0931,0.0931,0.0928,0.0907,0.0896,0.0896,0.0825,0.082,0.079,0.0784,0.0778,0.076,0.0759,0.0748,0.0742,0.0741,0.0729,0.0728,0.0728,0.0721,0.0711,0.071,0.0709,0.0707,0.0697,0.0691,0.0683,0.067,0.0669,0.0658,0.0651,0.0648,0.0642,0.0632,0.0631,0.0629,0.0624,0.0611,0.061,0.0607,0.0593,0.0591,0.057,0.0563,0.0549,0.0548,0.0546,0.0537,0.0537,0.0525,0.0523,0.0523,0.0517,0.0513,0.0505,0.05,0.0496,0.0488,0.0484,0.0477,0.0473,0.0471,0.047,0.0469,0.0466,0.0459,0.0458,0.0458,0.0457,0.0454,0.044,0.0437,0.0429,0.0427,0.0422,0.0412,0.041,0.0408,0.0407,0.0403,0.04,0.04,0.04,0.0399,0.0397,0.0395,0.0394,0.0391,0.039,0.039,0.0388,0.0382,0.0381,0.038,0.0377,0.037,0.0367,0.0365,0.0359,0.0359,0.0356,0.0354,0.0351,0.0351,0.0343,0.0331,0.0331,0.0328,0.0328,0.0323,0.0322,0.0318,0.0317,0.031,0.0304,0.0304,0.0301,0.0301,0.0297,0.0296,0.0296,0.0294,0.0291,0.029,0.0289,0.0287,0.0286,0.0283,0.028,0.0277,0.0275,0.0274,0.0274,0.0272,0.0272,0.0268,0.0262,0.0261,0.026,0.0259,0.0258,0.0257,0.0253,0.025,0.0248,0.0247,0.0246,0.0245,0.0245,0.0242,0.024,0.024,0.0236,0.0235,0.0234,0.0234,0.0233,0.0229,0.0229,0.0226,0.0225,0.0224,0.0223,0.0223,0.0222,0.0221,0.022,0.022,0.022,0.0219,0.0217,0.0217,0.0217,0.0216,0.0216,0.0215,0.0213,0.0212,0.0212,0.0211,0.0211,0.0211,0.0207,0.0207,0.0207,0.0206,0.0204,0.0203,0.0203,0.0202,0.0202,0.0201,0.0201,0.0199,0.0198,0.0197,0.0195,0.0195,0.0194,0.0193,0.0192,0.0191,0.0191,0.0191,0.0188,0.0188,0.0186,0.0186,0.0186,0.0185,0.0184,0.0184,0.0184,0.0182,0.0182,0.0182,0.0181,0.018,0.0179,0.0179,0.0179,0.0179,0.0177,0.0177,0.0177,0.0176,0.0175,0.0175,0.0171,0.017,0.017,0.017,0.0169,0.0169,0.0167,0.0167,0.0165,0.0165,0.0164,0.0164,0.0163,0.0163,0.0159,0.0158,0.0156,0.0156,0.0156,0.0156,0.0156,0.0155,0.0155,0.0155,0.0154,0.0154,0.0153,0.0153,0.0152,0.0152,0.0151,0.0151,0.0151,0.015,0.015,0.015,0.015,0.0149,0.0148,0.0148,0.0148,0.0146,0.0146,0.0145,0.0144,0.0143,0.0143,0.0143,0.0143,0.0142,0.0141,0.014,0.0139,0.0139,0.0138,0.0138,0.0138,0.0137,0.0137,0.0136,0.0136,0.0136,0.0136,0.0136,0.0135,0.0133,0.0133,0.0132,0.0132,0.0131,0.013,0.013,0.0129,0.0129,0.0128,0.0128,0.0127,0.0127,0.0127,0.0126,0.0126,0.0126,0.0126,0.0125,0.0125,0.0124,0.0124,0.0124,0.0124,0.0123,0.0123,0.0122,0.0122,0.0122,0.0122,0.0121,0.012,0.012,0.0119,0.0119,0.0117,0.0117,0.0117,0.0117,0.0116,0.0116,0.0116,0.0115,0.0115,0.0114,0.0114,0.0114,0.0113,0.0113,0.0113,0.0113,0.0112,0.0112,0.0112,0.0111,0.0111,0.011,0.0109,0.0109,0.0109,0.0108,0.0108,0.0108,0.0108,0.0107,0.0107,0.0107,0.0106,0.0106,0.0106,0.0105,0.0105,0.0105,0.0104,0.0104,0.0104,0.0104,0.0103,0.0103,0.0103,0.0102,0.0102,0.0102,0.0102,0.0102,0.0101,0.0101,0.0101,0.01,0.01,0.0099,0.0099,0.0099,0.0099,0.0098,0.0098,0.0098,0.0098,0.0097,0.0097,0.0097,0.0097,0.0097,0.0097,0.0097,0.0097,0.0096,0.0095,0.0095,0.0095,0.0094,0.0094,0.0093,0.0093,0.0093,0.0093,0.0093,0.0093,0.0092,0.0092,0.0092,0.0092,0.0092,0.0092,0.0091,0.0091,0.0091,0.009,0.009,0.009,0.009,0.009,0.0089,0.0089,0.0089,0.0088,0.0088,0.0088,0.0088,0.0087,0.0087,0.0086,0.0086,0.0085,0.0085,0.0084,0.0084,0.0084,0.0083,0.0083,0.0083,0.0083,0.0083,0.0083,0.0082,0.0082,0.0082,0.0082,0.0082,0.0082,0.0081,0.0081,0.0081,0.0081,0.008,0.008,0.0079,0.0079,0.0079,0.0078,0.0078,0.0077,0.0077,0.0077,0.0077,0.0077];
+function drawCliff() {
+  const svg = document.getElementById("cliffsvg"), NS = "http://www.w3.org/2000/svg";
+  const W = 960, H = 300, L = 52, B = 30, T = 16, K = 50, top = 0.3;
+  const y = (r) => H - B - (r / top) * (H - B - T), bw = (W - L) / CLIFF.length;
+  const el = (tag, a, text) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); if (text != null) e.textContent = text; svg.appendChild(e); return e; };
+  const defs = el("defs", {});
+  defs.innerHTML = '<linearGradient id="cp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6dff4a"/><stop offset="1" stop-color="#1b9108"/></linearGradient><linearGradient id="ct" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5c5c5c"/><stop offset="1" stop-color="#262626"/></linearGradient>';
+  for (const t of [0, 0.15, 0.3]) {
+    el("line", { x1: L, x2: W, y1: y(t), y2: y(t), stroke: "#1f1f1f" });
+    el("text", { x: L - 8, y: y(t) + 5, "text-anchor": "end", fill: "#8f8f8f" }, Math.round(t * 100) + "%");
+  }
+  CLIFF.forEach((r, i) => {
+    const b = el("rect", { x: L + i * bw + bw * 0.1, width: Math.max(bw * 0.8, 0.6), y: y(r), height: Math.max(H - B - y(r), 1), rx: Math.min(bw * 0.4, 2), fill: i < K ? "url(#cp)" : "url(#ct)" });
+    b.style.animationDelay = Math.min(i, 120) * 5 + "ms";
+    const tt = document.createElementNS(NS, "title"); tt.textContent = `rank ${i + 1}: ${(r * 100).toFixed(1)}% chance of failing within 30 days`; b.appendChild(tt);
+  });
+  const kx = L + K * bw;
+  el("line", { x1: kx, x2: kx, y1: T, y2: H - B, stroke: "#39ff14", "stroke-dasharray": "4 4" });
+  el("text", { x: kx + 8, y: T + 16, fill: "#39ff14" }, "this week's pull list: 50 drives, 6.0 expected failures");
+  el("text", { x: kx + 8, y: T + 38, fill: "#8f8f8f" }, "next 450: 9.9 expected failures");
+  el("text", { x: L, y: H - 8, fill: "#8f8f8f" }, "rank 1");
+  el("text", { x: W, y: H - 8, "text-anchor": "end", fill: "#8f8f8f" }, "rank 500");
+}
+drawCliff();
+
 const seen = new IntersectionObserver((entries) => {
   for (const e of entries) {
     if (!e.isIntersecting) continue;
@@ -408,7 +468,7 @@ const seen = new IntersectionObserver((entries) => {
   }
 }, { threshold: 0.15 });
 document.querySelectorAll("#diagram .box").forEach((b, i) => (b.style.transitionDelay = i * 70 + "ms"));
-document.querySelectorAll(".reveal, #diagram").forEach((n) => seen.observe(n));
+document.querySelectorAll(".reveal, #diagram, #shot").forEach((n) => seen.observe(n));
 </script>
 </body>
 </html>

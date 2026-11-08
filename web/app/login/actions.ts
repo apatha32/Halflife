@@ -20,7 +20,7 @@ export async function demoLogin(form: FormData) {
     email: String(form.get("email")),
     password: process.env.DEMO_PASSWORD ?? "",
   });
-  redirect(error ? `/login?error=${encodeURIComponent(error.message)}` : "/pull-list");
+  redirect(error ? `/login?error=${encodeURIComponent(error.message)}` : "/dashboard");
 }
 
 export async function signOut() {
