@@ -94,5 +94,9 @@ Known limitations (not fixed):
 - Verified locally: nightly ingested 2025-12..2026-09 (10 months), scored 37,291 drives for 2026-09-30, 359 alerts (44 entered top K, 315 rank jumps) in 6 min with 2.5 GB peak RAM. Re-run: only 2026-09 re-ingested, 0 new alerts, same counts. Planted stale score was deleted on re-score. Alerts page checked at 1280 and 375 px; Northwind sees none.
 - CLIs: Homebrew failed (outdated Command Line Tools; vercel moved to a cask) and global npm needs root, so Railway 5.71.0 and Vercel 65.12.1 are installed with `npm i -g --prefix ~/.local`.
 
+## Cleanups (2026-11-08)
+- [x] Worker image 2.17 GB -> 1.21 GB: build as the app user with COPY --chown (the old `chown -R` layer duplicated every file), UV_NO_CACHE, and matplotlib moved to dev deps (only train draws the cost curve; imported inside plot()).
+- [x] CI actions on current majors: checkout v7, setup-node v7, setup-uv v10, setup-cli v3 (pinned CLI 2.121.0), upload-pages-artifact v5, deploy-pages v5.
+
 ## Next session
 - Phase 2 deploy: user runs `supabase login`, `railway login`, `vercel login` (Railway Hobby $5 plan confirmed). Then follow docs/deploy.md.

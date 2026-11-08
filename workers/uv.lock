@@ -132,7 +132,6 @@ dependencies = [
     { name = "duckdb" },
     { name = "httpx" },
     { name = "lightgbm" },
-    { name = "matplotlib" },
     { name = "polars" },
     { name = "pyarrow" },
     { name = "pyyaml" },
@@ -142,6 +141,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "matplotlib" },
     { name = "pytest" },
     { name = "ruff" },
 ]
@@ -151,7 +151,6 @@ requires-dist = [
     { name = "duckdb", specifier = ">=2.0.0" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "lightgbm", specifier = ">=4.7.0" },
-    { name = "matplotlib", specifier = ">=3.11.2" },
     { name = "polars", specifier = ">=2.1.0" },
     { name = "pyarrow", specifier = ">=26.0.1" },
     { name = "pyyaml", specifier = ">=6.0.3" },
@@ -161,6 +160,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "matplotlib", specifier = ">=3.11.2" },
     { name = "pytest" },
     { name = "ruff" },
 ]

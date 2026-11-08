@@ -1,12 +1,7 @@
 import duckdb
-import matplotlib
-import matplotlib.ticker
 import numpy as np
 import polars as pl
 from sklearn.metrics import average_precision_score
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 
 COLORS = ["#2a78d6", "#eb6834", "#1baf7a"]
 FRACTIONS = np.geomspace(1e-4, 1e-2, 15).round(6).tolist()
@@ -40,6 +35,12 @@ def cost_curve(s: pl.DataFrame) -> list[dict]:
 
 def plot(curves: dict[str, list[dict]], path) -> None:
     """Save the cost curves of all models as one PNG."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter
+
     fig, ax = plt.subplots(figsize=(7, 4.5), facecolor="#fcfcfb")
     ax.set_facecolor("#fcfcfb")
     for (name, pts), color in zip(curves.items(), COLORS):
@@ -55,7 +56,7 @@ def plot(curves: dict[str, list[dict]], path) -> None:
             va="center",
         )
     ax.set_xscale("symlog", linthresh=1)
-    ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:g}"))
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
     ax.set_xlabel("Healthy drives pulled per week", color="#52514e")
     ax.set_ylabel("Failures caught per week", color="#52514e")
     ax.set_title(
