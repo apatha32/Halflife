@@ -20,9 +20,12 @@ def test_scores_rank_coverage_and_drivers():
     df = pl.DataFrame(
         rows | {"drive_id": ["a", "b"], "model": ["M", "M"], "date": ["2025-12-31"] * 2}
     )
-    s = scores({"kind": "lightgbm", "model": Fake(), "models": {"M": 0}}, df, "f1", "v1")
+    head = {"kind": "lightgbm", "model": Fake(), "a": 1.0, "b": 0.0}
+    art = {"models": {"M": 0}, "heads": {7: head, 30: head, 90: head}}
+    s = scores(art, df, "f1", "v1")
     assert s["drive_id"].to_list() == ["b", "a"] and s["rank"].to_list() == [1, 2]
     assert s["coverage"].to_list() == [2 / 9, 2 / 9]
+    assert (s["risk_7d"] <= s["risk"]).all() and (s["risk"] <= s["risk_90d"]).all()
     assert s["top_drivers"].to_list()[0] == ["Reallocated sectors: 7"]
 
 

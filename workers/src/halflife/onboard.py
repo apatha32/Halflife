@@ -123,7 +123,7 @@ def to_bronze(file: Path, mapping: dict, bronze: Path) -> int:
     return duckdb.sql(f"SELECT count(*) FROM '{bronze}/data.parquet'").fetchall()[0][0]
 
 
-def apply(file: Path, mapping: dict, fleet: str, data: Path, model_dir: Path, horizon: int) -> dict:
+def apply(file: Path, mapping: dict, fleet: str, data: Path, model_dir: Path) -> dict:
     """File -> bronze -> clean -> features -> score for the file's last day."""
     need = {"drive_id", "date", "model"} - set(mapping["columns"])
     if need:
@@ -132,6 +132,6 @@ def apply(file: Path, mapping: dict, fleet: str, data: Path, model_dir: Path, ho
     r, jumps = clean.run(data)
     if jumps:
         raise ValueError(f"null rate jumped: {jumps}")
-    features(data / "silver", data / "gold", horizon)
+    features(data / "silver", data / "gold")
     r["scored"] = score(date.fromisoformat(r["data_end"]), fleet, data, model_dir)
     return r

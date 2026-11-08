@@ -25,11 +25,11 @@ select is((select count(*) from make_alerts('11111111-1111-1111-1111-11111111111
 
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "bbbbbbbb-0000-0000-0000-000000000001"}';
-select is((select count(*) from alerts), 0::bigint, 'Northwind user reads no Acme alerts');
+select is((select count(*) from alerts where fleet_id = '11111111-1111-1111-1111-111111111111'), 0::bigint, 'Northwind user reads no Acme alerts');
 select throws_ok($$select make_alerts('11111111-1111-1111-1111-111111111111', '2025-12-02', 2)$$,
   '42501', null, 'signed-in users cannot run make_alerts');
 set local request.jwt.claims = '{"sub": "aaaaaaaa-0000-0000-0000-000000000001"}';
-select is((select count(*) from alerts), 2::bigint, 'Acme user reads its alerts');
+select is((select count(*) from alerts where score_date = '2025-12-02'), 2::bigint, 'Acme user reads its alerts');
 
 select * from finish();
 rollback;

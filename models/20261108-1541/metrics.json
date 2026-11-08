@@ -1,0 +1,238 @@
+{
+  "version": "20261108-1541",
+  "best": "lightgbm",
+  "k": 50,
+  "neg_rate": 0.05,
+  "train_rows": 836016,
+  "splits": {
+    "train": [
+      "2024-01-01",
+      "2025-07-01"
+    ],
+    "validate": [
+      "2025-08-01",
+      "2026-01-29"
+    ],
+    "test": [
+      "2026-03-01",
+      "2026-08-31"
+    ]
+  },
+  "features": [
+    "capacity_tb",
+    "age_days",
+    "temp_mean_7d",
+    "smart_5",
+    "smart_9",
+    "smart_12",
+    "smart_187",
+    "smart_188",
+    "smart_194",
+    "smart_197",
+    "smart_198",
+    "smart_199",
+    "smart_5_d7",
+    "smart_5_d30",
+    "smart_12_d7",
+    "smart_12_d30",
+    "smart_187_d7",
+    "smart_187_d30",
+    "smart_188_d7",
+    "smart_188_d30",
+    "smart_197_d7",
+    "smart_197_d30",
+    "smart_198_d7",
+    "smart_198_d30",
+    "smart_199_d7",
+    "smart_199_d30",
+    "model"
+  ],
+  "results": {
+    "validate": {
+      "naive_rule": {
+        "pr_auc": 0.0191,
+        "precision_at_50": 0.0338,
+        "recall_at_50": 0.0541
+      },
+      "logistic": {
+        "pr_auc": 0.0571,
+        "precision_at_50": 0.1062,
+        "recall_at_50": 0.1697
+      },
+      "lightgbm": {
+        "pr_auc": 0.0722,
+        "precision_at_50": 0.1185,
+        "recall_at_50": 0.1894
+      }
+    },
+    "test": {
+      "naive_rule": {
+        "pr_auc": 0.0524,
+        "precision_at_50": 0.077,
+        "recall_at_50": 0.1025
+      },
+      "logistic": {
+        "pr_auc": 0.1007,
+        "precision_at_50": 0.1481,
+        "recall_at_50": 0.197
+      },
+      "lightgbm": {
+        "pr_auc": 0.1048,
+        "precision_at_50": 0.1593,
+        "recall_at_50": 0.2118
+      }
+    }
+  },
+  "calibrated_test": {
+    "7d": {
+      "pr_auc": 0.0616,
+      "precision_at_50": 0.0593,
+      "recall_at_50": 0.3279,
+      "brier": 0.000247,
+      "expected_failures": 219.5,
+      "observed_failures": 244,
+      "deciles_predicted_vs_observed": [
+        [
+          2e-05,
+          0.00015
+        ],
+        [
+          3e-05,
+          1e-05
+        ],
+        [
+          4e-05,
+          8e-05
+        ],
+        [
+          6e-05,
+          1e-05
+        ],
+        [
+          8e-05,
+          4e-05
+        ],
+        [
+          9e-05,
+          5e-05
+        ],
+        [
+          0.00012,
+          2e-05
+        ],
+        [
+          0.00015,
+          6e-05
+        ],
+        [
+          0.0002,
+          0.00017
+        ],
+        [
+          0.00151,
+          0.00195
+        ]
+      ]
+    },
+    "30d": {
+      "pr_auc": 0.1048,
+      "precision_at_50": 0.1593,
+      "recall_at_50": 0.2118,
+      "brier": 0.000995,
+      "expected_failures": 900.3,
+      "observed_failures": 1015,
+      "deciles_predicted_vs_observed": [
+        [
+          6e-05,
+          0.00038
+        ],
+        [
+          0.00012,
+          0.00031
+        ],
+        [
+          0.00017,
+          0.00017
+        ],
+        [
+          0.00021,
+          0.00025
+        ],
+        [
+          0.00028,
+          0.00026
+        ],
+        [
+          0.00036,
+          0.00032
+        ],
+        [
+          0.00047,
+          0.00025
+        ],
+        [
+          0.00063,
+          0.00018
+        ],
+        [
+          0.00086,
+          0.00048
+        ],
+        [
+          0.00624,
+          0.00798
+        ]
+      ]
+    },
+    "90d": {
+      "pr_auc": 0.1568,
+      "precision_at_50": 0.3433,
+      "recall_at_50": 0.1453,
+      "brier": 0.003048,
+      "expected_failures": 1876.1,
+      "observed_failures": 2126,
+      "deciles_predicted_vs_observed": [
+        [
+          0.00014,
+          0.00095
+        ],
+        [
+          0.00031,
+          0.00098
+        ],
+        [
+          0.00051,
+          0.00107
+        ],
+        [
+          0.00074,
+          0.00109
+        ],
+        [
+          0.00099,
+          0.00101
+        ],
+        [
+          0.00124,
+          0.00118
+        ],
+        [
+          0.00155,
+          0.00095
+        ],
+        [
+          0.00206,
+          0.0013
+        ],
+        [
+          0.003,
+          0.0019
+        ],
+        [
+          0.01909,
+          0.02315
+        ]
+      ]
+    }
+  }
+}

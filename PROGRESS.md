@@ -98,5 +98,14 @@ Known limitations (not fixed):
 - [x] Worker image 2.17 GB -> 1.21 GB: build as the app user with COPY --chown (the old `chown -R` layer duplicated every file), UV_NO_CACHE, and matplotlib moved to dev deps (only train draws the cost curve; imported inside plot()).
 - [x] CI actions on current majors: checkout v7, setup-node v7, setup-uv v10, setup-cli v3 (pinned CLI 2.121.0), upload-pages-artifact v5, deploy-pages v5.
 
+## Phase 4: model upgrades (2026-11-08)
+- [x] Labels for 7/30/90 days (y_7, y_30, y_90; NULL when the window passes the data end). HORIZON_DAYS env removed.
+- [x] Calibration: Platt scaling on validation Monday snapshots (rank-preserving, so the pull list order is unchanged). Risk is now a probability. Test (2026-03-01..2026-08-31): 30d Brier 0.000995, expected 900 vs observed 1,015 failure-days (about 11% under).
+- [x] Time to failure: separate calibrated LightGBM heads for 7 and 90 days; scores kept monotone (7 <= 30 <= 90). Stored as drive_scores.risk_7d / risk_90d; drive page shows all three. This is a discrete-time stand-in for a survival model, not a Cox/AFT fit.
+- [x] Drift: training saves per-feature decile reference; nightly computes PSI of the newest day and a backtest on the latest fully labeled Monday, stored as model_health in the quality report and shown on the data-quality page.
+- Retrained on 2024-01..2026-09 (model 20261108-1541; old 20261104-1138 removed, its artifact format is incompatible). Test: LightGBM PR-AUC 0.105 vs naive 0.052, P@50 15.9% vs 7.7%, R@50 21.2% vs 10.3%.
+- Real drift found: power-on hours / age PSI 0.37 (fleet older than training data). Retraining on newer data is the obvious follow-up.
+- Known: re-scoring a day with a new model creates alerts for drives that newly enter the top K under that model (148 on 2026-09-30); alerts are never deleted.
+
 ## Next session
 - Phase 2 deploy: user runs `supabase login`, `railway login`, `vercel login` (Railway Hobby $5 plan confirmed). Then follow docs/deploy.md.

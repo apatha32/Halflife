@@ -11,7 +11,7 @@ import polars as pl
 
 from halflife.clean import ATTRS
 from halflife.features import FEATURES
-from halflife.train import matrix, predict
+from halflife.train import PRIMARY, matrix, predict
 
 HISTORY_DRIVES = 1000
 NAMES = {
@@ -48,10 +48,10 @@ def label(feature: str, value, model: str) -> str:
 
 def contributions(art: dict, df: pl.DataFrame) -> np.ndarray:
     """Per-feature contributions to risk (SHAP for LightGBM, coef * x for logistic)."""
-    X = matrix(df, art["models"])
-    if art["kind"] == "lightgbm":
-        return art["model"].predict(X, pred_contrib=True)[:, :-1]
-    return art["model"][:-1].transform(X[:, :-1]) * art["model"][-1].coef_[0]
+    X, head = matrix(df, art["models"]), art["heads"][PRIMARY]
+    if head["kind"] == "lightgbm":
+        return head["model"].predict(X, pred_contrib=True)[:, :-1]
+    return head["model"][:-1].transform(X[:, :-1]) * head["model"][-1].coef_[0]
 
 
 def drivers(art: dict, df: pl.DataFrame) -> list[list[str]]:
@@ -89,10 +89,17 @@ def fleet_id(name: str) -> str:
 
 
 def scores(art: dict, df: pl.DataFrame, fid: str, version: str) -> pl.DataFrame:
-    """Risk, rank, coverage and top drivers for every drive in df (one day)."""
+    """30-day risk (rank order), 7/90-day risks kept monotone, coverage and top drivers per drive."""
     smart = [f"smart_{a}" for a in ATTRS]
+    p7, p30, p90 = (predict(art, df, h) for h in (7, PRIMARY, 90))
+    p30 = np.maximum(p30, p7)
     return (
-        df.with_columns(risk=predict(art, df), top_drivers=pl.Series(drivers(art, df)))
+        df.with_columns(
+            risk=p30,
+            risk_7d=p7,
+            risk_90d=np.maximum(p90, p30),
+            top_drivers=pl.Series(drivers(art, df)),
+        )
         .with_columns(
             rank=pl.col("risk").rank("ordinal", descending=True).cast(pl.Int32),
             coverage=pl.sum_horizontal(pl.col(smart).is_not_null()) / len(smart),
@@ -123,7 +130,17 @@ def upload_scores(s: pl.DataFrame, fid: str, day: date) -> None:
     run_at = datetime.now(UTC).isoformat()
     drives = s.select("fleet_id", "drive_id", "model", "manufacturer", "capacity_tb")
     upsert("drives", drives.to_dicts(), "fleet_id,drive_id")
-    cols = ["fleet_id", "drive_id", "score_date", "risk", "rank", "age_days", "coverage"]
+    cols = [
+        "fleet_id",
+        "drive_id",
+        "score_date",
+        "risk",
+        "risk_7d",
+        "risk_90d",
+        "rank",
+        "age_days",
+        "coverage",
+    ]
     rows = s.select(*cols, "top_drivers", "model_version").with_columns(scored_at=pl.lit(run_at))
     upsert("drive_scores", rows.fill_nan(None).to_dicts(), "fleet_id,drive_id,score_date")
     url, headers = rest("drive_scores")

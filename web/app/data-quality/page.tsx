@@ -5,7 +5,37 @@ type Report = {
   run_at: string; data_start: string; data_end: string; rows_in: number; rows_out: number;
   quarantined: Record<string, number>; quarantined_failures: number; resets_fixed: number;
   rows_rebased: number; schema_hashes: Record<string, number>; null_rate_change: Record<string, number>;
+  model_health?: {
+    model_version: string; drift_date: string; drift_psi: Record<string, number>; backtest_date: string;
+    backtest: Record<string, number>;
+  };
 };
+
+const drift = (v: number) => (v < 0.1 ? ["stable", "text-neon"] : v < 0.25 ? ["watch", "text-neon-300"] : ["drifting", "text-paper"]);
+
+function Health({ h }: { h: NonNullable<Report["model_health"]> }) {
+  const find = (prefix: string) => Object.entries(h.backtest).find(([k]) => k.startsWith(prefix))!;
+  const [prec, rec] = [find("precision"), find("recall")];
+  return (
+    <div className="space-y-3 border-t border-line pt-4">
+      <h3 className="font-mono text-xs tracking-wider text-dim uppercase">Model health / {h.model_version}</h3>
+      <p className="text-sm text-soft">
+        Backtest on {h.backtest_date}: {(prec[1] * 100).toFixed(1)}% of the weekly pull list failed within 30 days and it caught{" "}
+        {(rec[1] * 100).toFixed(1)}% of failures. Expected {h.backtest.expected_failures} failures, observed {h.backtest.observed_failures}.
+      </p>
+      <p className="text-sm text-dim">
+        Feature drift on {h.drift_date} versus training data (PSI: under 0.1 stable, 0.1 to 0.25 watch, over 0.25 drifting).
+      </p>
+      <Table
+        columns={[{ key: "f", label: "Feature" }, { key: "v", label: "PSI", numeric: true }, { key: "s", label: "Status" }]}
+        rows={Object.entries(h.drift_psi).sort((a, b) => b[1] - a[1]).map(([f, v]) => {
+          const [label, cls] = drift(v);
+          return { f, v: v.toFixed(3), s: <span className={cls}>{label}</span> };
+        })}
+      />
+    </div>
+  );
+}
 
 const n = (v: number) => v.toLocaleString("en-US");
 const pairs = (o: Record<string, number>) => Object.entries(o).map(([k, v]) => ({ k, v: n(v) }));
@@ -45,6 +75,7 @@ export default async function DataQuality() {
               <Table columns={[{ key: "k", label: "Quarantine reason" }, { key: "v", label: "Rows", numeric: true }]} rows={pairs(r.quarantined)} />
               <Table columns={[{ key: "k", label: "Schema hash" }, { key: "v", label: "Rows", numeric: true }]} rows={pairs(r.schema_hashes)} />
             </div>
+            {r.model_health && <Health h={r.model_health} />}
           </article>
         );
       })}

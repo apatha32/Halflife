@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import date, datetime
 from pathlib import Path
@@ -47,7 +48,7 @@ def features():
     from halflife import DATA
     from halflife.features import features
 
-    n = features(DATA / "silver", DATA / "gold", int(os.environ.get("HORIZON_DAYS", "30")))
+    n = features(DATA / "silver", DATA / "gold")
     print(f"gold: {n:,} rows")
 
 
@@ -61,14 +62,7 @@ def train():
     meta = train(
         DATA / "gold", ROOT / "models", k, float(os.environ.get("NEG_SAMPLE_RATE", "0.05"))
     )
-    tables = "\n\n".join(
-        f"### {split.title()}\n\n{evaluate.table(r)}" for split, r in meta["results"].items()
-    )
-    doc = (
-        f"# Evaluation — model {meta['version']}\n\nBest (by validation PR-AUC): "
-        f"**{meta['best']}**. K = {k} drives per weekly snapshot. Splits: {meta['splits']}.\n\n"
-        f"{tables}\n\n![Cost curve](../models/{meta['version']}/cost_curve.png)\n"
-    )
+    doc = evaluate.doc(meta)
     (ROOT / "docs" / "evaluation.md").write_text(doc)
     print(doc)
 
@@ -106,7 +100,6 @@ def onboard(fleet: str = Required, file: Path = Required, apply: bool = False):
         fleet,
         DATA / "fleets" / slug,
         max((ROOT / "models").glob("*/model.pkl")).parent,
-        int(os.environ.get("HORIZON_DAYS", "30")),
     )
     print(
         f"{r['rows_in']:,} rows in, {sum(r['quarantined'].values()):,} quarantined "
@@ -121,6 +114,7 @@ def nightly(fleet: str = "Acme Storage"):
     from halflife.clean import run
     from halflife.features import features
     from halflife.ingest import ingest, newest_day, resume_from
+    from halflife.monitor import health
     from halflife.score import score
 
     start = resume_from(
@@ -131,7 +125,12 @@ def nightly(fleet: str = "Acme Storage"):
     _, jumps = run(DATA)
     if jumps:
         raise typer.Exit(f"Null rate jumped past NULL_RATE_MAX_JUMP: {jumps}")
-    features(DATA / "silver", DATA / "gold", int(os.environ.get("HORIZON_DAYS", "30")))
+    features(DATA / "silver", DATA / "gold")
     model_dir = max((ROOT / "models").glob("*/model.pkl")).parent
+    report = max((DATA / "reports").glob("*.json"))
+    r = json.loads(report.read_text()) | {
+        "model_health": health(DATA / "gold", model_dir, capacity())
+    }
+    report.write_text(json.dumps(r, indent=2))
     print(f"{score(end, fleet, DATA, model_dir):,} drives scored for {end}")
     print(f"{len(alerts.notify(fleet, end, capacity())):,} new alerts")

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ViewTransition } from "react";
 import Table from "@/components/Table";
+import { pct } from "@/lib/format";
 import { session } from "@/lib/supabase";
 
 const PAGE = 25;
@@ -11,7 +12,7 @@ export const COLUMNS = [
   { key: "drive_id", label: "Drive" },
   { key: "model", label: "Model", wide: true },
   { key: "age", label: "Age (yrs)", numeric: true, wide: true },
-  { key: "risk", label: "Risk", numeric: true },
+  { key: "risk", label: "30-day risk", numeric: true },
   { key: "top_driver", label: "Top driver" },
 ];
 
@@ -36,7 +37,7 @@ export default async function PullList({ searchParams }: { searchParams: Promise
           <p className="font-mono text-xs tracking-widest text-neon uppercase">{fleet.name}</p>
           <h1 className="mt-1 text-4xl font-semibold tracking-tight">Pull list</h1>
           <p className="mt-1 text-sm text-dim">
-            Riskiest drives {rows[0] ? `scored ${rows[0].score_date}` : ""}. Risk ranks drives; it is not a calibrated probability.
+            Riskiest drives {rows[0] ? `scored ${rows[0].score_date}` : ""}, ranked by their chance of failing within 30 days.
           </p>
         </div>
         <a href="/pull-list/export" className="neon-btn border border-neon px-3 py-1.5 text-sm text-neon">Export CSV</a>
@@ -50,7 +51,7 @@ export default async function PullList({ searchParams }: { searchParams: Promise
             <ViewTransition name={`drive-${r.drive_id}`} share="morph" default="none"><span className="font-mono">{r.drive_id}</span></ViewTransition>
           </Link>,
           age: r.age_days == null ? "n/a" : (r.age_days / 365).toFixed(1),
-          risk: <span className={tier(r.rank)}>{r.risk.toFixed(3)}</span>,
+          risk: <span className={tier(r.rank)}>{pct(r.risk)}</span>,
           top_driver: (r.top_driver ?? "n/a") + (r.coverage < 1 ? ` (coverage ${Math.round(r.coverage * 100)}%)` : ""),
         }))}
       />

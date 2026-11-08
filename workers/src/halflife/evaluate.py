@@ -22,6 +22,52 @@ def metrics(s: pl.DataFrame, k: int) -> dict:
     }
 
 
+def calibration(y: np.ndarray, p: np.ndarray) -> dict:
+    """Brier score, expected vs observed failures, and observed rate by predicted decile."""
+    order = np.argsort(p)
+    deciles = [
+        (round(float(p[i].mean()), 5), round(float(y[i].mean()), 5))
+        for i in np.array_split(order, 10)
+    ]
+    return {
+        "brier": round(float(np.mean((p - y) ** 2)), 6),
+        "expected_failures": round(float(p.sum()), 1),
+        "observed_failures": int(y.sum()),
+        "deciles_predicted_vs_observed": deciles,
+    }
+
+
+def reference(df: pl.DataFrame, features: list[str]) -> dict:
+    """Per-feature decile edges and bin shares (last bin = null) for drift checks."""
+    ref = {}
+    for f in features:
+        col = df[f].cast(pl.Float64).to_numpy()
+        edges = (
+            np.unique(np.nanquantile(col, np.linspace(0.1, 0.9, 9)))
+            if np.isfinite(col).any()
+            else np.array([])
+        )
+        ref[f] = {"edges": edges.tolist(), "share": shares(col, edges).tolist()}
+    return ref
+
+
+def shares(col: np.ndarray, edges) -> np.ndarray:
+    """Share of values per bin defined by edges, plus a final bin for nulls."""
+    ok = np.isfinite(col)
+    counts = np.bincount(np.digitize(col[ok], edges), minlength=len(edges) + 1)
+    return np.append(counts, (~ok).sum()) / max(len(col), 1)
+
+
+def psi(ref: dict, df: pl.DataFrame) -> dict[str, float]:
+    """Population stability index of each feature in df versus the training reference."""
+    out = {}
+    for f, r in ref.items():
+        e = np.clip(np.array(r["share"]), 1e-4, None)
+        a = np.clip(shares(df[f].cast(pl.Float64).to_numpy(), r["edges"]), 1e-4, None)
+        out[f] = round(float(np.sum((a - e) * np.log(a / e))), 4)
+    return out
+
+
 def cost_curve(s: pl.DataFrame) -> list[dict]:
     """Failures caught vs healthy drives pulled per week when pulling the top K% of drives."""
     rows = duckdb.sql(f"""WITH r AS ({RANKED}), f AS (SELECT unnest({FRACTIONS})::DOUBLE AS frac)
@@ -82,3 +128,42 @@ def table(results: dict[str, dict]) -> str:
     return head + "".join(
         f"\n| {m} | " + " | ".join(str(v) for v in r.values()) + " |" for m, r in results.items()
     )
+
+
+def doc(meta: dict) -> str:
+    """docs/evaluation.md for a trained model version."""
+    ranks = "\n\n".join(
+        f"### {split.title()}\n\n{table(r)}" for split, r in meta["results"].items()
+    )
+    cal = {
+        h: {k: v for k, v in r.items() if not k.startswith("deciles")}
+        for h, r in meta["calibrated_test"].items()
+    }
+    deciles = "\n".join(
+        f"| {i + 1} | {p:.4f} | {o:.4f} |"
+        for i, (p, o) in enumerate(meta["calibrated_test"]["30d"]["deciles_predicted_vs_observed"])
+    )
+    return f"""# Evaluation: model {meta["version"]}
+
+Best 30-day ranker (by validation PR-AUC): **{meta["best"]}**. K = {meta["k"]} drives per weekly snapshot.
+Splits: {meta["splits"]}.
+
+## Ranking (raw scores, 30-day label)
+
+{ranks}
+
+## Calibrated chance of failing within 7, 30 and 90 days (test)
+
+Each head is Platt-calibrated on the validation period. Brier is the mean squared error of the
+probability; expected vs observed compares summed probabilities with actual failures.
+
+{table(cal)}
+
+### 30-day calibration by predicted decile (test)
+
+| Decile | Mean predicted | Observed rate |
+|---|---|---|
+{deciles}
+
+![Cost curve](../models/{meta["version"]}/cost_curve.png)
+"""

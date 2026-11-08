@@ -1,0 +1,233 @@
+{
+  "naive_rule": [
+    {
+      "k_pct": 0.01,
+      "failures_avoided": 1.0,
+      "healthy_pulled": 2.74
+    },
+    {
+      "k_pct": 0.0139,
+      "failures_avoided": 1.19,
+      "healthy_pulled": 3.81
+    },
+    {
+      "k_pct": 0.0193,
+      "failures_avoided": 1.33,
+      "healthy_pulled": 5.67
+    },
+    {
+      "k_pct": 0.0268,
+      "failures_avoided": 1.56,
+      "healthy_pulled": 8.0
+    },
+    {
+      "k_pct": 0.0373,
+      "failures_avoided": 1.85,
+      "healthy_pulled": 11.33
+    },
+    {
+      "k_pct": 0.0518,
+      "failures_avoided": 2.15,
+      "healthy_pulled": 16.26
+    },
+    {
+      "k_pct": 0.07200000000000001,
+      "failures_avoided": 2.7,
+      "healthy_pulled": 22.85
+    },
+    {
+      "k_pct": 0.1,
+      "failures_avoided": 3.07,
+      "healthy_pulled": 32.48
+    },
+    {
+      "k_pct": 0.1389,
+      "failures_avoided": 3.74,
+      "healthy_pulled": 45.63
+    },
+    {
+      "k_pct": 0.1931,
+      "failures_avoided": 5.19,
+      "healthy_pulled": 63.41
+    },
+    {
+      "k_pct": 0.2683,
+      "failures_avoided": 6.7,
+      "healthy_pulled": 88.59
+    },
+    {
+      "k_pct": 0.3728,
+      "failures_avoided": 8.74,
+      "healthy_pulled": 123.67
+    },
+    {
+      "k_pct": 0.5178999999999999,
+      "failures_avoided": 10.59,
+      "healthy_pulled": 173.37
+    },
+    {
+      "k_pct": 0.7197,
+      "failures_avoided": 13.52,
+      "healthy_pulled": 242.15
+    },
+    {
+      "k_pct": 1.0,
+      "failures_avoided": 16.04,
+      "healthy_pulled": 339.44
+    }
+  ],
+  "logistic": [
+    {
+      "k_pct": 0.01,
+      "failures_avoided": 1.33,
+      "healthy_pulled": 2.41
+    },
+    {
+      "k_pct": 0.0139,
+      "failures_avoided": 1.78,
+      "healthy_pulled": 3.22
+    },
+    {
+      "k_pct": 0.0193,
+      "failures_avoided": 2.11,
+      "healthy_pulled": 4.89
+    },
+    {
+      "k_pct": 0.0268,
+      "failures_avoided": 2.78,
+      "healthy_pulled": 6.78
+    },
+    {
+      "k_pct": 0.0373,
+      "failures_avoided": 3.48,
+      "healthy_pulled": 9.7
+    },
+    {
+      "k_pct": 0.0518,
+      "failures_avoided": 4.22,
+      "healthy_pulled": 14.19
+    },
+    {
+      "k_pct": 0.07200000000000001,
+      "failures_avoided": 5.22,
+      "healthy_pulled": 20.33
+    },
+    {
+      "k_pct": 0.1,
+      "failures_avoided": 6.07,
+      "healthy_pulled": 29.48
+    },
+    {
+      "k_pct": 0.1389,
+      "failures_avoided": 7.33,
+      "healthy_pulled": 42.04
+    },
+    {
+      "k_pct": 0.1931,
+      "failures_avoided": 8.85,
+      "healthy_pulled": 59.74
+    },
+    {
+      "k_pct": 0.2683,
+      "failures_avoided": 10.41,
+      "healthy_pulled": 84.89
+    },
+    {
+      "k_pct": 0.3728,
+      "failures_avoided": 12.78,
+      "healthy_pulled": 119.63
+    },
+    {
+      "k_pct": 0.5178999999999999,
+      "failures_avoided": 14.63,
+      "healthy_pulled": 169.33
+    },
+    {
+      "k_pct": 0.7197,
+      "failures_avoided": 16.41,
+      "healthy_pulled": 239.26
+    },
+    {
+      "k_pct": 1.0,
+      "failures_avoided": 18.67,
+      "healthy_pulled": 336.81
+    }
+  ],
+  "lightgbm": [
+    {
+      "k_pct": 0.01,
+      "failures_avoided": 1.41,
+      "healthy_pulled": 2.33
+    },
+    {
+      "k_pct": 0.0139,
+      "failures_avoided": 1.78,
+      "healthy_pulled": 3.22
+    },
+    {
+      "k_pct": 0.0193,
+      "failures_avoided": 2.44,
+      "healthy_pulled": 4.56
+    },
+    {
+      "k_pct": 0.0268,
+      "failures_avoided": 3.0,
+      "healthy_pulled": 6.56
+    },
+    {
+      "k_pct": 0.0373,
+      "failures_avoided": 3.48,
+      "healthy_pulled": 9.7
+    },
+    {
+      "k_pct": 0.0518,
+      "failures_avoided": 4.11,
+      "healthy_pulled": 14.3
+    },
+    {
+      "k_pct": 0.07200000000000001,
+      "failures_avoided": 5.26,
+      "healthy_pulled": 20.3
+    },
+    {
+      "k_pct": 0.1,
+      "failures_avoided": 6.44,
+      "healthy_pulled": 29.11
+    },
+    {
+      "k_pct": 0.1389,
+      "failures_avoided": 7.96,
+      "healthy_pulled": 41.41
+    },
+    {
+      "k_pct": 0.1931,
+      "failures_avoided": 9.67,
+      "healthy_pulled": 58.93
+    },
+    {
+      "k_pct": 0.2683,
+      "failures_avoided": 11.7,
+      "healthy_pulled": 83.59
+    },
+    {
+      "k_pct": 0.3728,
+      "failures_avoided": 13.48,
+      "healthy_pulled": 118.93
+    },
+    {
+      "k_pct": 0.5178999999999999,
+      "failures_avoided": 15.22,
+      "healthy_pulled": 168.74
+    },
+    {
+      "k_pct": 0.7197,
+      "failures_avoided": 17.52,
+      "healthy_pulled": 238.15
+    },
+    {
+      "k_pct": 1.0,
+      "failures_avoided": 19.11,
+      "healthy_pulled": 336.37
+    }
+  ]
+}

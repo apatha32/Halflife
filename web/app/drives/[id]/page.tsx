@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ViewTransition } from "react";
 import Table from "@/components/Table";
 import { session } from "@/lib/supabase";
+import { pct } from "@/lib/format";
 import Chart, { type Point } from "./Chart";
 
 const HISTORY = [
@@ -18,7 +19,7 @@ export default async function Drive({ params }: { params: Promise<{ id: string }
   const { db } = await session();
   const [{ data: drive }, { data: scores }, { data: history }] = await Promise.all([
     db.from("drives").select("model, manufacturer, capacity_tb").eq("drive_id", id).maybeSingle(),
-    db.from("drive_scores").select("score_date, risk, rank, coverage, top_drivers").eq("drive_id", id).order("score_date", { ascending: false }),
+    db.from("drive_scores").select("score_date, risk, risk_7d, risk_90d, rank, coverage, top_drivers").eq("drive_id", id).order("score_date", { ascending: false }),
     db.from("drive_history").select("date, smart_5, smart_187, smart_197, smart_198, smart_194").eq("drive_id", id).order("date"),
   ]);
   if (!drive) return <p>Drive not found in your fleet. <Link className="text-neon underline" href="/pull-list">Back to the pull list</Link></p>;
@@ -36,10 +37,16 @@ export default async function Drive({ params }: { params: Promise<{ id: string }
         </p>
         {latest && (
           <div className="mt-4 flex flex-wrap gap-3">
-            {[["rank", `#${latest.rank}`], ["risk", latest.risk.toFixed(3)], ["scored", latest.score_date]].map(([k, v]) => (
+            {[
+              ["rank", `#${latest.rank}`],
+              ["fails within 7 days", latest.risk_7d == null ? "n/a" : pct(latest.risk_7d)],
+              ["within 30 days", pct(latest.risk)],
+              ["within 90 days", latest.risk_90d == null ? "n/a" : pct(latest.risk_90d)],
+              ["scored", latest.score_date],
+            ].map(([k, v]) => (
               <div key={k} className="border border-line shade px-4 py-2">
                 <div className="font-mono text-xs tracking-wider text-dim uppercase">{k}</div>
-                <div className={`font-mono text-xl font-bold ${k === "scored" ? "text-soft" : "glow text-neon"}`}>{v}</div>
+                <div className={`font-mono text-xl font-bold ${k === "scored" ? "text-soft" : k === "within 30 days" || k === "rank" ? "glow text-neon" : "text-neon-300"}`}>{v}</div>
               </div>
             ))}
           </div>
@@ -65,7 +72,7 @@ export default async function Drive({ params }: { params: Promise<{ id: string }
       )}
       {history && history.length > 0 ? (
         <>
-          <Chart data={history as Point[]} scoreDate={latest?.score_date} risk={latest ? `risk ${latest.risk.toFixed(3)}` : ""} />
+          <Chart data={history as Point[]} scoreDate={latest?.score_date} risk={latest ? `30-day risk ${pct(latest.risk)}` : ""} />
           <details className="text-sm">
             <summary className="cursor-pointer text-dim hover:text-neon">Sensor history as a table</summary>
             <div className="mt-2"><Table columns={HISTORY} rows={[...history].reverse()} /></div>
@@ -76,8 +83,8 @@ export default async function Drive({ params }: { params: Promise<{ id: string }
       )}
       {scores && scores.length > 1 && (
         <Table
-          columns={[{ key: "score_date", label: "Scored" }, { key: "rank", label: "Rank", numeric: true }, { key: "risk", label: "Risk", numeric: true }]}
-          rows={scores.map((s) => ({ ...s, risk: s.risk.toFixed(3) }))}
+          columns={[{ key: "score_date", label: "Scored" }, { key: "rank", label: "Rank", numeric: true }, { key: "risk", label: "30-day risk", numeric: true }]}
+          rows={scores.map((s) => ({ ...s, risk: pct(s.risk) }))}
         />
       )}
     </div>
