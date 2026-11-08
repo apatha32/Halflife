@@ -15,8 +15,11 @@ Dashboard > Authentication > URL Configuration: Site URL = `https://<your-vercel
 `https://<your-vercel-domain>/auth/callback` to Redirect URLs (magic links). Copy the project URL,
 anon key and service-role key from Project Settings > API.
 
-Seeded demo users have public passwords. Before inviting real users, either remove them or treat
-the two seed fleets as public demo data.
+The migrations also create the private `uploads` storage bucket (CSV only, 20 MB) and its access
+rules. Seeded demo users have a public password, so the seed makes them viewers: they can read the
+two demo fleets but cannot upload. To give a real user upload rights, add them in Authentication >
+Users and insert a membership:
+`insert into memberships (user_id, fleet_id, role) values ('<user id>', '<fleet id>', 'admin');`
 
 ## 2. Railway (workers job)
 
@@ -41,6 +44,19 @@ Backblaze has published, rebuilds silver and gold, scores the newest day, prunes
 raises alerts. The first run starts from INGEST_START, needs up to ~8 GB RAM and a few GB of volume,
 and takes ~15-20 minutes; later runs are a few minutes. Backblaze publishes Drive Stats quarterly,
 so most nights re-score the same day and create no new alerts.
+
+Second Railway service for customer uploads (same repo and image, no volume needed):
+
+```sh
+railway add --service halflife-uploads
+railway variables --service halflife-uploads \
+  --set SUPABASE_URL=https://<project-ref>.supabase.co --set SUPABASE_SERVICE_ROLE_KEY=<service-role key> \
+  --set RAILWAY_RUN_UID=0
+```
+
+In that service's settings, set the start command to `halflife uploads`, the cron schedule to
+`*/10 * * * *` and the restart policy to Never (railway.json describes the nightly service only).
+Each run takes seconds when nothing is waiting.
 
 ## 3. Vercel (web)
 

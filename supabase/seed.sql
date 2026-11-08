@@ -22,9 +22,10 @@ select gen_random_uuid(), id, id::text, jsonb_build_object('sub', id::text, 'ema
   'email', now(), now()
 from auth.users where email like 'demo@%';
 
-insert into memberships values
-  ('aaaaaaaa-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111'),
-  ('bbbbbbbb-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222');
+-- Demo users have a public password, so they are viewers: they can read but not upload.
+insert into memberships (user_id, fleet_id, role) values
+  ('aaaaaaaa-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'viewer'),
+  ('bbbbbbbb-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222', 'viewer');
 
 insert into drives (fleet_id, drive_id, model, manufacturer, capacity_tb)
 select f.id, 'SEED-' || left(f.name, 1) || lpad(i::text, 3, '0'), 'ST16000NM001G', 'Seagate', 16

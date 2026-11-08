@@ -134,3 +134,12 @@ def nightly(fleet: str = "Acme Storage"):
     report.write_text(json.dumps(r, indent=2))
     print(f"{score(end, fleet, DATA, model_dir):,} drives scored for {end}")
     print(f"{len(alerts.notify(fleet, end, capacity())):,} new alerts")
+
+
+@app.command()
+def uploads():
+    """Propose mappings for new customer uploads and score approved ones."""
+    from halflife import DATA, ROOT
+    from halflife.uploads import process
+
+    print(process(DATA, max((ROOT / "models").glob("*/model.pkl")).parent))

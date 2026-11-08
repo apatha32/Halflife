@@ -5,6 +5,7 @@ type Report = {
   run_at: string; data_start: string; data_end: string; rows_in: number; rows_out: number;
   quarantined: Record<string, number>; quarantined_failures: number; resets_fixed: number;
   rows_rebased: number; schema_hashes: Record<string, number>; null_rate_change: Record<string, number>;
+  parse_failures?: Record<string, number>;
   model_health?: {
     model_version: string; drift_date: string; drift_psi: Record<string, number>; backtest_date: string;
     backtest: Record<string, number>;
@@ -70,6 +71,8 @@ export default async function DataQuality() {
             <p className="text-sm text-dim">
               {r.quarantined_failures} failure rows quarantined. {n(r.rows_rebased)} rows rebased after counter resets.
               {change && ` Largest null-rate change vs previous run: ${change[0]} ${change[1] >= 0 ? "+" : ""}${(change[1] * 100).toFixed(1)} points.`}
+              {r.parse_failures &&
+                ` Values that could not be parsed (stored as empty): ${Object.entries(r.parse_failures).map(([k, v]) => `${k} ${n(v)}`).join(", ") || "none"}.`}
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               <Table columns={[{ key: "k", label: "Quarantine reason" }, { key: "v", label: "Rows", numeric: true }]} rows={pairs(r.quarantined)} />

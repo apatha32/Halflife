@@ -39,3 +39,33 @@ def test_column_names_with_quotes_are_safe(tmp_path):
     f = tmp_path / "q.csv"
     f.write_text('"Serial ""No""",Date,Model\nA,2025-01-01,M\nB,2025-01-01,M\n')
     assert profile(f)['Serial "No"']["distinct"] == 2
+
+
+def test_smartctl_style_names_bytes_capacity_and_parse_failures(tmp_path):
+    from halflife.onboard import parse_failures
+
+    head = "SN,Timestamp,Device Model,User Capacity,Reallocated_Sector_Ct,Current_Pending_Sector,Temperature_Celsius,Power_On_Hours,UDMA_CRC_Error_Count"
+    rows = "\n".join(
+        f"X{i % 25},2025-03-{1 + i % 28:02d},WDC WUH721414,14000519643136,{'n/a' if i < 3 else i % 7},0,{30 + i % 9},{20000 + i},0"
+        for i in range(300)
+    )
+    f = tmp_path / "s.csv"
+    f.write_text(f"{head}\n{rows}\n")
+    m = propose(profile(f))
+    got = {t: c["source"] for t, c in m["columns"].items()}
+    assert got == {
+        "drive_id": "SN",
+        "date": "Timestamp",
+        "model": "Device Model",
+        "capacity_tb": "User Capacity",
+        "smart_5": "Reallocated_Sector_Ct",
+        "smart_197": "Current_Pending_Sector",
+        "smart_194": "Temperature_Celsius",
+        "smart_9": "Power_On_Hours",
+        "smart_199": "UDMA_CRC_Error_Count",
+    }
+    assert (
+        m["columns"]["capacity_tb"]["transform"] == "bytes_to_tb"
+        and "transform" not in m["columns"]["smart_194"]
+    )
+    assert parse_failures(f, m) == {"smart_5": 3}

@@ -150,10 +150,10 @@ footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--d
     <a class="btn ghost" href="#system">See the system</a>
   </div>
   <div class="stats">
-    <div class="stat"><b data-count="22490291">22,490,291</b><span>drive-days ingested</span></div>
-    <div class="stat"><b data-count="34147">34,147</b><span>drives scored daily</span></div>
-    <div class="stat"><b data-count="3.1" data-dec="1" data-suffix="x">3.1x</b><span>failures caught vs naive rule</span></div>
-    <div class="stat"><b data-count="5126">5,126</b><span>bad rows quarantined, with reasons</span></div>
+    <div class="stat"><b data-count="32148944">32,148,944</b><span>drive-days ingested</span></div>
+    <div class="stat"><b data-count="37291">37,291</b><span>drives scored nightly</span></div>
+    <div class="stat"><b data-count="2.1" data-dec="1" data-suffix="x">2.1x</b><span>failures caught vs naive rule</span></div>
+    <div class="stat"><b data-count="6525">6,525</b><span>bad rows quarantined, with reasons</span></div>
   </div>
 </div></header>
 
@@ -163,7 +163,7 @@ footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--d
   <div class="grid">
     <div class="card"><p class="n">01</p><h3>Surprise failures cost</h3><p>Storage operators lose redundancy, rebuild time and on-call hours when a drive dies without warning.</p></div>
     <div class="card"><p class="n">02</p><h3>Blind swaps cost too</h3><p>Pulling drives "just in case" wastes hardware and technician time, and most pulled drives were healthy.</p></div>
-    <div class="card"><p class="n">03</p><h3>Halflife ranks the fleet</h3><p>Every drive gets a 30-day failure risk, so a team that can replace K drives a week pulls the right K, with reasons in plain language.</p></div>
+    <div class="card"><p class="n">03</p><h3>Halflife ranks the fleet</h3><p>Every drive gets a calibrated chance of failing within 7, 30 and 90 days, so a team that can replace K drives a week pulls the right K, with reasons in plain language and alerts when a drive turns risky.</p></div>
   </div>
 </div></section>
 
@@ -182,7 +182,7 @@ footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--d
         </marker>
       </defs>
       <rect class="group" x="196" y="28" width="476" height="512"/>
-      <text class="glabel" x="212" y="50">RAILWAY JOB / WORKERS DOCKER IMAGE</text>
+      <text class="glabel" x="212" y="50">RAILWAY CRON / NIGHTLY + UPLOADS JOBS</text>
       <rect class="group" x="704" y="28" width="320" height="512"/>
       <text class="glabel" x="720" y="50">SERVING</text>
 
@@ -205,22 +205,22 @@ footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--d
       <text class="elabel" x="882" y="344">anon key + RLS</text>
 
       <g class="box store"><rect x="16" y="72" width="172" height="72"/><text x="28" y="100">Backblaze</text><text x="28" y="118">Drive Stats</text><text class="sub" x="28" y="134">Iceberg table on B2</text></g>
-      <g class="box store"><rect x="16" y="352" width="160" height="72"/><text x="28" y="380">Customer CSV</text><text class="sub" x="28" y="398">via reviewed</text><text class="sub" x="28" y="412">mapping.yaml</text></g>
+      <g class="box store"><rect x="16" y="352" width="160" height="72"/><text x="28" y="380">Customer CSV</text><text class="sub" x="28" y="398">uploaded in the app,</text><text class="sub" x="28" y="412">mapping reviewed</text></g>
 
-      <g class="box"><rect x="226" y="80" width="180" height="56"/><text x="240" y="104">ingest</text><text class="sub" x="240" y="122">date filter, 10% by hash</text></g>
+      <g class="box"><rect x="226" y="80" width="180" height="56"/><text x="240" y="104">ingest</text><text class="sub" x="240" y="122">nightly, new months only</text></g>
       <g class="box"><rect x="226" y="200" width="180" height="56"/><text x="240" y="224">clean</text><text class="sub" x="240" y="242">rebase + quarantine</text></g>
-      <g class="box"><rect x="226" y="310" width="180" height="56"/><text x="240" y="334">features</text><text class="sub" x="240" y="352">past-only windows, label</text></g>
-      <g class="box"><rect x="226" y="412" width="180" height="56"/><text x="240" y="436">train</text><text class="sub" x="240" y="454">naive / LR / LightGBM</text></g>
-      <g class="box"><rect x="226" y="484" width="180" height="44"/><text x="240" y="504">score</text><text class="sub" x="240" y="520">rank + SHAP drivers</text></g>
+      <g class="box"><rect x="226" y="310" width="180" height="56"/><text x="240" y="334">features</text><text class="sub" x="240" y="352">past-only, 7/30/90d labels</text></g>
+      <g class="box"><rect x="226" y="412" width="180" height="56"/><text x="240" y="436">train</text><text class="sub" x="240" y="454">LightGBM + calibration</text></g>
+      <g class="box"><rect x="226" y="484" width="180" height="44"/><text x="240" y="504">score + alerts</text><text class="sub" x="240" y="520">risk, SHAP, drift</text></g>
 
       <g class="box store"><rect x="448" y="80" width="180" height="56"/><text x="462" y="104">bronze</text><text class="sub" x="462" y="122">raw Parquet, year/month</text></g>
       <g class="box store"><rect x="448" y="200" width="180" height="56"/><text x="462" y="224">silver</text><text class="sub" x="462" y="242">canonical drive-days</text></g>
       <g class="box store"><rect x="448" y="310" width="180" height="56"/><text x="462" y="334">gold</text><text class="sub" x="462" y="352">features + labels</text></g>
       <g class="box store"><rect x="448" y="412" width="180" height="56"/><text x="462" y="436">models/version</text><text class="sub" x="462" y="454">model, metrics, curve</text></g>
 
-      <g class="box"><rect x="724" y="168" width="280" height="136"/><text x="740" y="196">Supabase Postgres</text><text class="sub" x="740" y="218">drives, drive_scores,</text><text class="sub" x="740" y="234">drive_history, quality_reports</text><text class="sub" x="740" y="256">RLS per fleet via memberships</text><text class="sub" x="740" y="272">pull_list(fleet, k)</text><text class="sub" x="740" y="288">Auth: magic link + demo</text></g>
-      <g class="box"><rect x="724" y="360" width="280" height="80"/><text x="740" y="388">Next.js on Vercel</text><text class="sub" x="740" y="408">pull list, drive detail,</text><text class="sub" x="740" y="424">data quality</text></g>
-      <g class="box"><rect x="724" y="474" width="280" height="52"/><text x="740" y="498">Operator</text><text class="sub" x="740" y="514">pulls the top K drives each week</text></g>
+      <g class="box"><rect x="724" y="168" width="280" height="136"/><text x="740" y="196">Supabase Postgres</text><text class="sub" x="740" y="218">drives, drive_scores, alerts,</text><text class="sub" x="740" y="234">uploads, quality_reports</text><text class="sub" x="740" y="256">RLS per fleet, admin / viewer</text><text class="sub" x="740" y="272">Storage bucket for CSV uploads</text><text class="sub" x="740" y="288">Auth: magic link + demo</text></g>
+      <g class="box"><rect x="724" y="360" width="280" height="80"/><text x="740" y="388">Next.js on Vercel</text><text class="sub" x="740" y="408">pull list, drive detail, alerts,</text><text class="sub" x="740" y="424">data quality, upload</text></g>
+      <g class="box"><rect x="724" y="474" width="280" height="52"/><text x="740" y="498">Operator</text><text class="sub" x="740" y="514">weekly pull list + Slack alerts</text></g>
     </svg>
   </div>
   <div class="legend"><span><i class="w"></i>compute step / service</span><span><i class="w" style="border-top-style:dashed"></i>storage</span><span><i></i>data flow</span></div>
@@ -228,71 +228,79 @@ footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--d
 
 <section id="pipeline"><div class="wrap reveal">
   <p class="kicker">pipeline</p>
-  <h2>Six steps, each idempotent</h2>
+  <h2>Eight steps, each idempotent</h2>
   <div class="grid">
-    <div class="card"><p class="n">01 / ingest</p><p>DuckDB reads Backblaze's Iceberg table on B2. A date filter prunes to one data file per day, then a stable md5 hash of the serial keeps 10% of drives with their full history. Re-ingesting a month replaces its partition.</p></div>
+    <div class="card"><p class="n">01 / ingest</p><p>Every night DuckDB reads only the months Backblaze has published since the last run from its Iceberg table on B2. A stable md5 hash of the serial keeps 10% of drives with their full history. Re-ingesting a month replaces its partition.</p></div>
     <div class="card"><p class="n">02 / clean</p><p>One canonical schema, nine SMART attributes. Counters that drop inside a drive are rebased. Duplicates, impossible values and rows after a drive's first failure are quarantined with a reason. Rows in always equal rows out plus quarantined.</p></div>
     <div class="card"><p class="n">03 / features</p><p>One SQL query: age, capacity, SMART values, 7 and 30 day deltas, 7 day temperature mean. Every window looks back only. A leakage test with sentinel future rows fails if any window peeks ahead.</p></div>
-    <div class="card"><p class="n">04 / train</p><p>Time split with 30 day gaps. Naive rule, logistic regression and LightGBM with class weights; negatives downsampled in train only. Best model chosen on validation, never on test.</p></div>
-    <div class="card"><p class="n">05 / score</p><p>Every active drive gets risk, rank and its top three SHAP drivers as plain sentences, upserted to Supabase keyed by fleet, drive and date. Re-running a date adds no rows.</p></div>
-    <div class="card"><p class="n">06 / onboard</p><p>A messy customer file is profiled, a column mapping is proposed with a confidence per field (name similarity plus value-range checks, such as Fahrenheit detection), reviewed as YAML, then applied.</p></div>
+    <div class="card"><p class="n">04 / train</p><p>Time split with 30 day gaps. Naive rule, logistic regression and LightGBM compared; the best is chosen on validation, never on test. Separate heads for 7, 30 and 90 days are Platt-calibrated so risk is a real probability.</p></div>
+    <div class="card"><p class="n">05 / score</p><p>Every active drive gets its 7, 30 and 90 day risk, a rank and its top three SHAP drivers as plain sentences, upserted to Supabase keyed by fleet, drive and date. Re-running a date adds no rows and removes drives that left the fleet.</p></div>
+    <div class="card"><p class="n">06 / upload</p><p>A customer uploads a messy CSV in the app. Halflife proposes a column mapping with a confidence per field (name similarity plus value checks such as Fahrenheit or bytes), the admin reviews it in the browser, and the drives are scored.</p></div>
+    <div class="card"><p class="n">07 / alerts</p><p>A SQL function compares each scoring day with the previous one: a drive alerts when it enters the weekly pull list or jumps 100+ ranks toward it. Alerts show in the app and post to Slack; re-runs never repeat them.</p></div>
+    <div class="card"><p class="n">08 / monitor</p><p>Each night measures drift (PSI of every feature against training) and backtests the latest Monday whose outcomes are known. Today it flags age and power-on hours: the fleet is older than the training data.</p></div>
   </div>
 </div></section>
 
 <section id="data"><div class="wrap reveal">
   <p class="kicker">messy data, counted</p>
   <h2>Nothing is dropped silently</h2>
-  <p class="dim">Latest full run: 2024-01-01 to 2025-12-31, 10% of drives.</p>
+  <p class="dim">Latest full run: 2024-01-01 to 2026-09-30, 10% of drives.</p>
   <div class="tablebox"><table>
     <tr><th>Check</th><th class="num">Count</th></tr>
-    <tr><td>Rows in (bronze)</td><td class="num">22,490,291</td></tr>
-    <tr><td>Rows out (silver)</td><td class="num neon">22,485,165</td></tr>
+    <tr><td>Rows in (bronze)</td><td class="num">32,148,944</td></tr>
+    <tr><td>Rows out (silver)</td><td class="num neon">32,142,419</td></tr>
     <tr><td>Quarantined: capacity reported as 0 or less</td><td class="num">3,312</td></tr>
-    <tr><td>Quarantined: rows after a drive's first failure</td><td class="num">1,814</td></tr>
-    <tr><td>Counter resets rebased</td><td class="num">2,458</td></tr>
-    <tr><td>Rows adjusted by rebasing</td><td class="num">265,089</td></tr>
-    <tr><td>Schema versions seen (reported SMART columns)</td><td class="num">5</td></tr>
-    <tr><td>Drives still active / retired or missing / failed</td><td class="num">34,147 / 2,687 / 860</td></tr>
+    <tr><td>Quarantined: rows after a drive's first failure</td><td class="num">3,213</td></tr>
+    <tr><td>Counter resets rebased</td><td class="num">4,903</td></tr>
+    <tr><td>Rows adjusted by rebasing</td><td class="num">651,521</td></tr>
+    <tr><td>Schema versions seen (reported SMART columns)</td><td class="num">7</td></tr>
+    <tr><td>Drives still active / retired or missing / failed</td><td class="num">37,290 / 3,307 / 1,243</td></tr>
   </table></div>
   <div class="grid" style="margin-top:12px">
-    <div class="card"><p class="n">northwind onboarding</p><p>Renamed columns, Fahrenheit temps, MM/DD/YYYY dates, numbers with thousands separators, two SMART columns missing. Mapped automatically, 712 duplicates (2%) quarantined, 300 drives scored at 77% attribute coverage.</p></div>
-    <div class="card"><p class="n">quality gate</p><p>Each clean run writes a JSON and Markdown report and fails if any column's null rate jumps past a threshold against the previous run.</p></div>
+    <div class="card"><p class="n">northwind onboarding</p><p>Renamed columns, Fahrenheit temps, MM/DD/YYYY dates, numbers with thousands separators, two SMART columns missing. Uploaded through the app, every field mapped correctly, 712 duplicates (2%) quarantined, 300 drives scored at 77% attribute coverage.</p></div>
+    <div class="card"><p class="n">quality gate</p><p>Each clean run writes a JSON and Markdown report and fails if any column's null rate jumps past a threshold against the previous run. Uploads also count values that could not be parsed, per column.</p></div>
   </div>
 </div></section>
 
 <section id="model"><div class="wrap">
   <div class="reveal">
     <p class="kicker">model results</p>
-    <h2>3x the failures caught at the same pull budget</h2>
-    <p class="dim">Test period 2025-07-27 to 2025-12-01, weekly snapshots of about 34,000 drives, K = 50 pulls per week.</p>
+    <h2>2x the failures caught at the same pull budget</h2>
+    <p class="dim">Test period 2026-03-01 to 2026-08-31, weekly snapshots of about 37,000 drives, K = 50 pulls per week.</p>
   </div>
   <div class="bars reveal" id="bars" aria-label="Recall at 50 by model">
-    <div class="bar"><span>Naive rule</span><div class="track"><div class="fill" data-w="5.85"></div></div><span class="v">5.9%</span></div>
-    <div class="bar mid"><span>Logistic</span><div class="track"><div class="fill" data-w="15.61"></div></div><span class="v">15.6%</span></div>
-    <div class="bar best"><span class="neon">LightGBM</span><div class="track"><div class="fill" data-w="18.05"></div></div><span class="v neon">18.1%</span></div>
+    <div class="bar"><span>Naive rule</span><div class="track"><div class="fill" data-w="10.25"></div></div><span class="v">10.3%</span></div>
+    <div class="bar mid"><span>Logistic</span><div class="track"><div class="fill" data-w="19.70"></div></div><span class="v">19.7%</span></div>
+    <div class="bar best"><span class="neon">LightGBM</span><div class="track"><div class="fill" data-w="21.18"></div></div><span class="v neon">21.2%</span></div>
   </div>
   <p class="dim reveal" style="font-size:13px;margin-top:-8px">Bars: recall at 50, the share of next-30-day failures that land in the weekly pull list.</p>
   <div class="tablebox reveal"><table>
     <tr><th>Model</th><th class="num">PR-AUC</th><th class="num">Precision@50</th><th class="num">Recall@50</th></tr>
-    <tr><td>Naive rule (reallocated or pending sectors &gt; 0)</td><td class="num">0.021</td><td class="num">3.8%</td><td class="num">5.9%</td></tr>
-    <tr><td>Logistic regression</td><td class="num">0.061</td><td class="num">10.1%</td><td class="num">15.6%</td></tr>
-    <tr class="best"><td>LightGBM</td><td class="num">0.078</td><td class="num">11.7%</td><td class="num">18.1%</td></tr>
+    <tr><td>Naive rule (reallocated or pending sectors &gt; 0)</td><td class="num">0.052</td><td class="num">7.7%</td><td class="num">10.3%</td></tr>
+    <tr><td>Logistic regression</td><td class="num">0.101</td><td class="num">14.8%</td><td class="num">19.7%</td></tr>
+    <tr class="best"><td>LightGBM</td><td class="num">0.105</td><td class="num">15.9%</td><td class="num">21.2%</td></tr>
+  </table></div>
+  <div class="tablebox reveal" style="margin-top:12px"><table>
+    <tr><th>Calibrated chance of failing</th><th class="num">PR-AUC</th><th class="num">Expected</th><th class="num">Observed</th></tr>
+    <tr><td>Within 7 days</td><td class="num">0.062</td><td class="num">220</td><td class="num">244</td></tr>
+    <tr class="best"><td>Within 30 days</td><td class="num">0.105</td><td class="num">900</td><td class="num">1,015</td></tr>
+    <tr><td>Within 90 days</td><td class="num">0.157</td><td class="num">1,876</td><td class="num">2,126</td></tr>
   </table></div>
   <div class="chart reveal" id="curve">
     <h3>Cost curve: pulling the top 0.01% to 1% riskiest drives each week</h3>
     <svg id="curvesvg" viewBox="0 0 720 380" role="img" aria-label="Failures caught per week versus healthy drives pulled per week, for three models. LightGBM is highest at every budget."></svg>
     <div class="legend"><span><i class="w" style="border-color:#39ff14"></i>LightGBM</span><span><i class="w" style="border-color:#d2ffc7"></i>Logistic</span><span><i class="w" style="border-color:#8f8f8f;border-top-style:dashed"></i>Naive rule</span></div>
   </div>
-  <p class="dim reveal" style="font-size:13px">Failures are rare (about 0.1% of drives fail in any 30 days), so most pulls are still healthy drives at this budget. Risk is a ranking score, not a calibrated probability.</p>
+  <p class="dim reveal" style="font-size:13px">Failures are rare (about 0.1% of drives fail in any 30 days), so most pulls are still healthy drives at this budget. Each horizon is Platt-calibrated on the validation period, so risk is a probability; it under-predicts by about 11% on the test period, shown as is.</p>
 </div></section>
 
 <section id="stack"><div class="wrap reveal">
   <p class="kicker">stack</p>
   <h2>Small, boring, fast</h2>
   <div class="grid">
-    <div class="card"><h3>workers</h3><p>Python 3.12, uv, DuckDB, Polars, LightGBM, scikit-learn, Typer. Runs as a Docker job on Railway.</p></div>
+    <div class="card"><h3>workers</h3><p>Python 3.12, uv, DuckDB, Polars, LightGBM, scikit-learn, Typer. Two Railway cron jobs from one 1.2 GB Docker image: nightly and uploads.</p></div>
     <div class="card"><h3>storage</h3><p>Bronze, silver and gold Parquet on a volume. Only scores, 180 days of history for the top 1,000 drives, and quality reports go to Postgres.</p></div>
-    <div class="card"><h3>database</h3><p>Supabase Postgres with row-level security on every fleet table, a pull_list function, and a pgTAP isolation test in CI.</p></div>
+    <div class="card"><h3>database</h3><p>Supabase Postgres with row-level security on every fleet table, admin and viewer roles, alert logic in SQL, a private Storage bucket for uploads, and pgTAP permission tests in CI.</p></div>
     <div class="card"><h3>web</h3><p>Next.js App Router on Vercel, server components with the user's session, Tailwind, Recharts. No service-role key in the browser.</p></div>
   </div>
 </div></section>
@@ -305,23 +313,20 @@ make setup
 cp .env.example .env            <span class="c"># public read-only B2 values from Backblaze</span>
 supabase start
 cd workers
-uv run --env-file ../.env halflife ingest --start 2024-01-01 --end 2025-12-31 --sample-pct 10
-uv run halflife clean
-uv run halflife features
-uv run --env-file ../.env halflife score --date 2025-12-31
+uv run --env-file ../.env halflife nightly    <span class="c"># ingest, clean, features, score, alerts</span>
+uv run --env-file ../.env halflife uploads    <span class="c"># process files uploaded in the app</span>
 cd ../web &amp;&amp; npm run dev            <span class="c"># open localhost:3000, "demo / Acme Storage"</span></pre>
-  <p class="dim" style="margin-top:16px">Deploy: Supabase (migration and seed), a Railway job built from workers/Dockerfile, and the web app on Vercel. Exact steps are in <a href="https://github.com/apatha32/Halflife/blob/main/docs/deploy.md">docs/deploy.md</a>.</p>
+  <p class="dim" style="margin-top:16px">Deploy: Supabase (migrations and seed), two Railway cron services built from workers/Dockerfile, and the web app on Vercel. Exact steps are in <a href="https://github.com/apatha32/Halflife/blob/main/docs/deploy.md">docs/deploy.md</a>.</p>
 </div></section>
 
 <section id="next"><div class="wrap reveal">
   <p class="kicker">next</p>
   <h2>What comes after v1</h2>
   <ol class="next">
-    <li>Survival model for time to failure, plus probability calibration</li>
-    <li>Upload UI with the column mapping reviewed in the browser</li>
-    <li>Nightly cron: ingest the newest day and rescore</li>
-    <li>Alerts when a drive enters the top K or jumps in rank</li>
-    <li>Drift monitoring on features and weekly precision</li>
+    <li>Retrain on recent data when drift monitoring flags it, and automate that</li>
+    <li>A true survival model to compare with the three calibrated horizons</li>
+    <li>Email alerts and admin invites from the app</li>
+    <li>Keep a fleet's upload history instead of replacing it with each new file</li>
   </ol>
 </div></section>
 
@@ -357,17 +362,17 @@ function count(el) {
 document.querySelectorAll("[data-count]").forEach(count);
 
 const CURVES = {
-  "Naive rule": { color: "#8f8f8f", dash: "6 5", pts: [[2.84,.16],[4.68,.32],[6,.42],[8.53,.47],[11.95,.47],[16.68,.63],[23.05,.79],[32.21,1.16],[44.26,1.79],[61.58,2.68],[85.74,3.63],[119.16,4.95],[165.21,7.26],[230.32,9.16],[322.26,10.42]] },
-  "Logistic": { color: "#d2ffc7", pts: [[2,1],[3.68,1.32],[4.89,1.53],[6.95,2.05],[10.05,2.37],[14.53,2.79],[20.58,3.26],[29.42,3.95],[41.37,4.68],[58.74,5.53],[82.68,6.68],[116.26,7.84],[162.89,9.58],[228.37,11.11],[320.05,12.63]] },
-  "LightGBM": { color: "#39ff14", pts: [[1.79,1.21],[3.26,1.74],[4.42,2],[6.63,2.37],[9.53,2.89],[13.63,3.68],[19.63,4.21],[28.42,4.95],[40.32,5.74],[57.47,6.79],[81.05,8.32],[114.21,9.89],[161.16,11.32],[227.11,12.37],[319.05,13.63]] },
+  "Naive rule": { color: "#8f8f8f", dash: "6 5", pts: [[2.74,1.0],[3.81,1.19],[5.67,1.33],[8.0,1.56],[11.33,1.85],[16.26,2.15],[22.85,2.7],[32.48,3.07],[45.63,3.74],[63.41,5.19],[88.59,6.7],[123.67,8.74],[173.37,10.59],[242.15,13.52],[339.44,16.04]] },
+  "Logistic": { color: "#d2ffc7", dy: 14, pts: [[2.41,1.33],[3.22,1.78],[4.89,2.11],[6.78,2.78],[9.7,3.48],[14.19,4.22],[20.33,5.22],[29.48,6.07],[42.04,7.33],[59.74,8.85],[84.89,10.41],[119.63,12.78],[169.33,14.63],[239.26,16.41],[336.81,18.67]] },
+  "LightGBM": { color: "#39ff14", dy: -6, pts: [[2.33,1.41],[3.22,1.78],[4.56,2.44],[6.56,3.0],[9.7,3.48],[14.3,4.11],[20.3,5.26],[29.11,6.44],[41.41,7.96],[58.93,9.67],[83.59,11.7],[118.93,13.48],[168.74,15.22],[238.15,17.52],[336.37,19.11]] },
 };
 function drawCurve() {
   const svg = document.getElementById("curvesvg"), NS = "http://www.w3.org/2000/svg";
   const W = 720, H = 380, L = 48, R = 104, T = 36, B = 44;
   const x = (v) => L + (Math.log10(v) - Math.log10(1.5)) / (Math.log10(400) - Math.log10(1.5)) * (W - L - R);
-  const y = (v) => H - B - v / 14 * (H - T - B);
+  const y = (v) => H - B - v / 20 * (H - T - B);
   const el = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; svg.appendChild(e); return e; };
-  for (const v of [0, 2, 4, 6, 8, 10, 12, 14]) {
+  for (const v of [0, 4, 8, 12, 16, 20]) {
     el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: "#262626" });
     el("text", { x: L - 8, y: y(v) + 4, "text-anchor": "end" }, v);
   }
@@ -389,7 +394,7 @@ function drawCurve() {
       const t = document.createElementNS(NS, "title"); t.textContent = `${name}: ${b} caught, ${a} healthy pulled per week`; dot.appendChild(t);
     }
     const [la, lb] = c.pts[c.pts.length - 1];
-    el("text", { x: x(la) + 8, y: y(lb) + 4, class: "lab", style: `fill:${c.color}` }, name);
+    el("text", { x: x(la) + 8, y: y(lb) + (c.dy ?? 4), class: "lab", style: `fill:${c.color}` }, name);
   }
 }
 
@@ -397,7 +402,7 @@ const seen = new IntersectionObserver((entries) => {
   for (const e of entries) {
     if (!e.isIntersecting) continue;
     e.target.classList.add("in");
-    if (e.target.id === "bars") e.target.querySelectorAll(".fill").forEach((f) => (f.style.width = f.dataset.w / 20 * 100 + "%"));
+    if (e.target.id === "bars") e.target.querySelectorAll(".fill").forEach((f) => (f.style.width = f.dataset.w / 25 * 100 + "%"));
     if (e.target.id === "curve") drawCurve();
     seen.unobserve(e.target);
   }

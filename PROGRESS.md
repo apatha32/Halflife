@@ -107,5 +107,16 @@ Known limitations (not fixed):
 - Real drift found: power-on hours / age PSI 0.37 (fleet older than training data). Retraining on newer data is the obvious follow-up.
 - Known: re-scoring a day with a new model creates alerts for drives that newly enter the top K under that model (148 on 2026-09-30); alerts are never deleted.
 
+## Phase 5: customer upload (2026-11-08)
+- [x] Roles: memberships.role admin/viewer; seeded demo users are viewers (public password, so no uploads). `is_admin()` helper.
+- [x] Storage: private `uploads` bucket (text/csv, 20 MB); admins write only under their fleet's folder, members read.
+- [x] `uploads` table with status flow uploaded -> needs_review -> approved -> processing -> scored/failed. Column grants: users may insert (fleet_id, path, filename) and update (mapping, status) only; RLS limits updates to admins and needs_review -> approved.
+- [x] Web: /upload (browser uploads straight to Storage with the user session, avoiding Vercel's 4.5 MB function body limit) and /upload/[id] review form (dropdown per field prefilled from the proposal with confidence, temperature unit, capacity unit, date format; required fields enforced).
+- [x] Worker: `halflife uploads` proposes mappings for new files and runs approved ones through onboard.apply; failures are recorded on the upload (the one deliberate broad except). Deployed as a second Railway cron (every 10 minutes, no volume).
+- [x] Onboarding gaps: unparseable values counted per column (parse_failures in the result and quality report, shown in the app); smartctl-style names and capacity in bytes now matched (tested). Those aliases were added before the test, so it proves the common format, not arbitrary files.
+- Verified in Chrome at 375 px: viewer sees uploads off; admin uploads Northwind CSV, mapping proposed correctly for every field (Fahrenheit, MM/DD/YYYY), approved, 300 drives scored, 712 duplicates quarantined. pgTAP: 7 upload permission checks.
+- Known: a new upload replaces that fleet's data (no upload history yet).
+- Docs: README, docs/deploy.md (uploads service, roles), evaluation.md and the project page updated to the 2024-01..2026-09 data and model 20261108-1541.
+
 ## Next session
-- Phase 2 deploy: user runs `supabase login`, `railway login`, `vercel login` (Railway Hobby $5 plan confirmed). Then follow docs/deploy.md.
+- Only deploy is left: user runs `supabase login`, `railway login`, `vercel login` (Railway Hobby $5 plan confirmed; CLIs installed in ~/.local). Then follow docs/deploy.md, including the second Railway service for uploads. Optional: Slack webhook URL.
