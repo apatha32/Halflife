@@ -1,4 +1,4 @@
-# Deploy (not done yet — run these yourself)
+# Deploy: steps to run yourself
 
 Order: Supabase first (the other two need its URL and keys), then Railway, then Vercel.
 
@@ -29,15 +29,18 @@ railway variables \
   --set B2_BUCKET=drivestats-iceberg --set B2_PREFIX=drivestats \
   --set B2_KEY_ID=<public key id> --set B2_APP_KEY=<public app key> \
   --set SUPABASE_URL=https://<project-ref>.supabase.co --set SUPABASE_SERVICE_ROLE_KEY=<service-role key> \
-  --set INGEST_START=2024-01-01 --set INGEST_END=2025-12-31 --set SAMPLE_PCT=10 \
-  --set RAILWAY_RUN_UID=0
+  --set INGEST_START=2024-01-01 --set SAMPLE_PCT=10 --set RAILWAY_RUN_UID=0
+# optional: --set SLACK_WEBHOOK_URL=<incoming webhook> to post new alerts
 railway up
 ```
 
 `RAILWAY_RUN_UID=0` is needed because Railway mounts volumes as root and the image runs as a
-non-root user. The first full run (2 years at 10%) needs ~8 GB RAM and ~2 GB of volume and takes
-~10-15 minutes. The job runs once and stops (`restartPolicyType: NEVER`); a nightly cron is on the
-README's Next list.
+non-root user. The job runs `halflife nightly` every day at 06:00 UTC (`cronSchedule` in
+railway.json): it re-ingests the newest month already on the volume plus anything newer that
+Backblaze has published, rebuilds silver and gold, scores the newest day, prunes stale scores and
+raises alerts. The first run starts from INGEST_START, needs up to ~8 GB RAM and a few GB of volume,
+and takes ~15-20 minutes; later runs are a few minutes. Backblaze publishes Drive Stats quarterly,
+so most nights re-score the same day and create no new alerts.
 
 ## 3. Vercel (web)
 

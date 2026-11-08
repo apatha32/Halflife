@@ -59,3 +59,18 @@ def ingest(start: date, end: date, pct: float) -> None:
         hi = next_month - timedelta(days=1)
         print(f"{lo:%Y-%m}: {ingest_month(con, src, lo, hi, pct, run_id):,} rows")
         lo = next_month
+
+
+def resume_from(bronze: Path, default: date) -> date:
+    """First day of the newest ingested month (re-ingested, as it may have grown), else default."""
+    months = sorted(bronze.glob("year=*/month=*"))
+    if not months:
+        return default
+    year, month = (int(part.split("=")[1]) for part in months[-1].parts[-2:])
+    return date(year, month, 1)
+
+
+def newest_day(start: date) -> date:
+    """Latest date published in the Drive Stats table, reading only months from start on."""
+    con, src = connect()
+    return con.execute(f"SELECT max(date) FROM {src} WHERE date >= DATE '{start}'").fetchall()[0][0]

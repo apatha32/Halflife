@@ -85,5 +85,14 @@ Known limitations (not fixed):
 - Verified in Chrome: route crossfade on every navigation, drive ID morph pull list -> drive page, no animations under reduced motion, no errors.
 - [x] Background: pure black with a fixed layer from the left edge: green radial + linear shade (breathes over 9s) and a 135-degree line pattern masked to fade out by ~60% width (drifts over 40s). Same in app and site; static under reduced motion. Fixed position, so it holds still across scroll and route transitions.
 
+## Phase 3: nightly updates and alerts (2026-11-08)
+- [x] `halflife nightly`: resume from the newest bronze month (re-ingested, it may have grown) or INGEST_START, ingest through the newest published day, clean, features, score that day, alerts. Railway cron 06:00 UTC.
+- [x] Alerts: `alerts` table + `make_alerts(fid, day, k, jump=100)` SQL function. Entered top K, or rose >= 100 ranks into the top 10K, vs the previous non-seed scoring date. Returns only newly inserted rows (re-runs alert nothing). Execute revoked from anon/authenticated. pgTAP test covers both kinds, idempotency, RLS and the revoke.
+- [x] Delivery: /alerts page in the app; Slack incoming webhook when SLACK_WEBHOOK_URL is set (no new dependency, httpx).
+- [x] Stale scores: each run stamps scored_at and deletes that fleet/day's rows it did not write.
+- Decisions: logic lives in SQL so the worker, re-runs and tests share one definition. Onboarding does not raise alerts (one snapshot, no previous day). No retraining in the nightly job.
+- Verified locally: nightly ingested 2025-12..2026-09 (10 months), scored 37,291 drives for 2026-09-30, 359 alerts (44 entered top K, 315 rank jumps) in 6 min with 2.5 GB peak RAM. Re-run: only 2026-09 re-ingested, 0 new alerts, same counts. Planted stale score was deleted on re-score. Alerts page checked at 1280 and 375 px; Northwind sees none.
+- CLIs: Homebrew failed (outdated Command Line Tools; vercel moved to a cask) and global npm needs root, so Railway 5.71.0 and Vercel 65.12.1 are installed with `npm i -g --prefix ~/.local`.
+
 ## Next session
-- Phase 2 deploy, decisions pending: install Railway + Vercel CLIs (`npm i -g @railway/cli vercel`); user runs `supabase login`, `railway login`, `vercel login`; choose paid Railway plan (~8 GB RAM for the 10% run) or a smaller sample on a free plan.
+- Phase 2 deploy: user runs `supabase login`, `railway login`, `vercel login` (Railway Hobby $5 plan confirmed). Then follow docs/deploy.md.

@@ -20,6 +20,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <>
                 <Link className="text-dim transition-colors hover:text-neon" href="/pull-list">pull list</Link>
                 <Link className="text-dim transition-colors hover:text-neon" href="/data-quality">data quality</Link>
+                <Link className="text-dim transition-colors hover:text-neon" href="/alerts">alerts</Link>
                 <form action={signOut}><button className="text-dim transition-colors hover:text-paper">sign out</button></form>
               </>
             )}

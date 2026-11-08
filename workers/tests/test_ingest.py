@@ -38,3 +38,10 @@ def test_partial_range_reingests_whole_month(tmp_path, monkeypatch):
     ing.ingest(date(2024, 1, 15), date(2024, 1, 15), 100)
     out = f"{tmp_path}/data/bronze/year=2024/month=01/data.parquet"
     assert duckdb.sql(f"SELECT count(DISTINCT date) FROM '{out}'").fetchall() == [(31,)]
+
+
+def test_resume_from_newest_month_or_default(tmp_path):
+    assert ing.resume_from(tmp_path, date(2024, 1, 1)) == date(2024, 1, 1)
+    for part in ["year=2024/month=12", "year=2025/month=02", "year=2025/month=10"]:
+        (tmp_path / part).mkdir(parents=True)
+    assert ing.resume_from(tmp_path, date(2024, 1, 1)) == date(2025, 10, 1)

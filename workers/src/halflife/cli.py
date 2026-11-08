@@ -1,4 +1,5 @@
-from datetime import datetime
+import os
+from datetime import date, datetime
 from pathlib import Path
 
 import typer
@@ -7,6 +8,11 @@ app = typer.Typer(no_args_is_help=True)
 Day = typer.Option(formats=["%Y-%m-%d"])
 ScoreDay = typer.Option(..., "--date", formats=["%Y-%m-%d"])
 Required = typer.Option(...)
+
+
+def capacity() -> int:
+    """Weekly replacement capacity K (drives)."""
+    return int(os.environ.get("WEEKLY_CAPACITY", "50"))
 
 
 @app.command()
@@ -38,8 +44,6 @@ def clean():
 @app.command()
 def features():
     """Silver -> gold labels and features."""
-    import os
-
     from halflife import DATA
     from halflife.features import features
 
@@ -50,12 +54,10 @@ def features():
 @app.command()
 def train():
     """Train and evaluate models."""
-    import os
-
     from halflife import DATA, ROOT, evaluate
     from halflife.train import train
 
-    k = int(os.environ.get("WEEKLY_CAPACITY", "50"))
+    k = capacity()
     meta = train(
         DATA / "gold", ROOT / "models", k, float(os.environ.get("NEG_SAMPLE_RATE", "0.05"))
     )
@@ -74,17 +76,17 @@ def train():
 @app.command()
 def score(day: datetime = ScoreDay, fleet: str = "Acme Storage"):
     """Score active drives and upsert to Supabase."""
-    from halflife import DATA, ROOT
+    from halflife import DATA, ROOT, alerts
     from halflife.score import score
 
     model_dir = max((ROOT / "models").glob("*/model.pkl")).parent
     print(f"{score(day.date(), fleet, DATA, model_dir):,} drives scored with {model_dir.name}")
+    print(f"{len(alerts.notify(fleet, day.date(), capacity())):,} new alerts")
 
 
 @app.command()
 def onboard(fleet: str = Required, file: Path = Required, apply: bool = False):
     """Propose a column mapping for a customer file; with --apply, clean, featurize and score it."""
-    import os
 
     import yaml
 
@@ -110,3 +112,26 @@ def onboard(fleet: str = Required, file: Path = Required, apply: bool = False):
         f"{r['rows_in']:,} rows in, {sum(r['quarantined'].values()):,} quarantined "
         f"{r['quarantined']}, {r['scored']:,} drives scored for {fleet} on {r['data_end']}"
     )
+
+
+@app.command()
+def nightly(fleet: str = "Acme Storage"):
+    """Ingest new months, clean, featurize, score the newest day and raise alerts."""
+    from halflife import DATA, ROOT, alerts
+    from halflife.clean import run
+    from halflife.features import features
+    from halflife.ingest import ingest, newest_day, resume_from
+    from halflife.score import score
+
+    start = resume_from(
+        DATA / "bronze", date.fromisoformat(os.environ.get("INGEST_START", "2024-01-01"))
+    )
+    end = newest_day(start)
+    ingest(start, end, float(os.environ.get("SAMPLE_PCT", "10")))
+    _, jumps = run(DATA)
+    if jumps:
+        raise typer.Exit(f"Null rate jumped past NULL_RATE_MAX_JUMP: {jumps}")
+    features(DATA / "silver", DATA / "gold", int(os.environ.get("HORIZON_DAYS", "30")))
+    model_dir = max((ROOT / "models").glob("*/model.pkl")).parent
+    print(f"{score(end, fleet, DATA, model_dir):,} drives scored for {end}")
+    print(f"{len(alerts.notify(fleet, end, capacity())):,} new alerts")

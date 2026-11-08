@@ -29,7 +29,7 @@ flowchart LR
   end
 ```
 
-Python workers (uv, DuckDB, Polars, LightGBM, Typer) do the data work; only curated outputs (scores, 180-day history for the top 1,000 drives, quality reports) reach Supabase. The web app reads with the signed-in user's session, so Postgres row-level security decides what each fleet sees.
+A Railway cron runs `halflife nightly` every day: it picks up any newly published Backblaze data, rescores the fleet and raises alerts when a drive enters the weekly pull list or jumps 100+ ranks toward it (shown on an Alerts page, and posted to Slack when a webhook is set). Python workers (uv, DuckDB, Polars, LightGBM, Typer) do the data work; only curated outputs (scores, 180-day history for the top 1,000 drives, quality reports) reach Supabase. The web app reads with the signed-in user's session, so Postgres row-level security decides what each fleet sees.
 
 ## Messy-data fixes (latest full run)
 
@@ -82,6 +82,7 @@ uv run halflife clean
 uv run halflife features
 uv run halflife train        # optional: a trained model is committed in models/
 uv run --env-file ../.env halflife score --date 2025-12-31
+uv run --env-file ../.env halflife nightly     # what the daily job runs: ingest new months -> clean -> features -> score newest day -> alerts
 
 uv run python ../scripts/make_northwind.py
 uv run halflife onboard --fleet Northwind --file ../data/northwind/northwind.csv           # writes mappings/northwind.yaml
@@ -96,6 +97,5 @@ For fast iteration, point any step at the 1% fixture: `DATA_DIR=workers/tests/fi
 
 - Survival model (time-to-failure) instead of a fixed 30-day label, and probability calibration.
 - Upload UI for customer files, with the mapping review in the browser.
-- Nightly cron: incremental ingest of the newest day and scoring.
-- Alerts when a drive enters the top K or jumps in rank.
 - Drift monitoring on feature distributions and model precision over time.
+- Email alerts (Slack and the in-app Alerts page exist today).

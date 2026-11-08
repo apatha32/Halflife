@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import duckdb
@@ -70,13 +70,13 @@ def rest(path: str) -> tuple[str, dict]:
     return f"{os.environ['SUPABASE_URL']}/rest/v1/{path}", {
         "apikey": key,
         "Authorization": f"Bearer {key}",
-        "Prefer": "resolution=merge-duplicates,return=minimal",
     }
 
 
 def upsert(table: str, rows: list[dict], conflict: str) -> None:
     """Upsert rows to Supabase in batches with the service-role key."""
     url, headers = rest(f"{table}?on_conflict={conflict}")
+    headers["Prefer"] = "resolution=merge-duplicates,return=minimal"
     for i in range(0, len(rows), 1000):
         httpx.post(url, json=rows[i : i + 1000], headers=headers, timeout=120).raise_for_status()
 
@@ -118,17 +118,26 @@ def history(data: Path, fid: str, day: date, drive_ids: list[str]) -> list[dict]
     )
 
 
+def upload_scores(s: pl.DataFrame, fid: str, day: date) -> None:
+    """Upsert drives and scores, then delete that day's rows this run did not write."""
+    run_at = datetime.now(UTC).isoformat()
+    drives = s.select("fleet_id", "drive_id", "model", "manufacturer", "capacity_tb")
+    upsert("drives", drives.to_dicts(), "fleet_id,drive_id")
+    cols = ["fleet_id", "drive_id", "score_date", "risk", "rank", "age_days", "coverage"]
+    rows = s.select(*cols, "top_drivers", "model_version").with_columns(scored_at=pl.lit(run_at))
+    upsert("drive_scores", rows.fill_nan(None).to_dicts(), "fleet_id,drive_id,score_date")
+    url, headers = rest("drive_scores")
+    stale = {"fleet_id": f"eq.{fid}", "score_date": f"eq.{day}", "scored_at": f"lt.{run_at}"}
+    httpx.delete(url, params=stale, headers=headers, timeout=120).raise_for_status()
+
+
 def score(day: date, fleet: str, data: Path, model_dir: Path) -> int:
     """Score drives active on `day` and upsert drives, scores, history and quality report."""
     art = joblib.load(model_dir / "model.pkl")
     df = duckdb.sql(f"SELECT * FROM '{data}/gold/features.parquet' WHERE date = '{day}'").pl()
     fid = fleet_id(fleet)
     s = scores(art, df, fid, model_dir.name)
-    drives = s.select("fleet_id", "drive_id", "model", "manufacturer", "capacity_tb")
-    upsert("drives", drives.to_dicts(), "fleet_id,drive_id")
-    cols = ["fleet_id", "drive_id", "score_date", "risk", "rank", "age_days", "coverage"]
-    rows = s.select(*cols, "top_drivers", "model_version").fill_nan(None).to_dicts()
-    upsert("drive_scores", rows, "fleet_id,drive_id,score_date")
+    upload_scores(s, fid, day)
     top = s["drive_id"].head(HISTORY_DRIVES).to_list()
     upsert("drive_history", history(data, fid, day, top), "fleet_id,drive_id,date")
     r = json.loads(max((data / "reports").glob("*.json")).read_text())
